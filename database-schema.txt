@@ -1,0 +1,598 @@
+================================================================================
+DATABASE SCHEMA DOCUMENTATION
+Clinical Trials Management System
+================================================================================
+
+================================================================================
+ENUMS
+================================================================================
+
+1. app_role
+   Values: 'super-admin', 'multi-site-management', 'sponsor', 'site', 'provider'
+
+================================================================================
+DATABASE FUNCTIONS
+================================================================================
+
+1. has_role(_user_id uuid, _role app_role) -> boolean
+   - Security: DEFINER
+   - Checks if a user has a specific role
+   - Used in RLS policies to prevent infinite recursion
+
+2. update_updated_at_column() -> trigger
+   - Security: DEFINER
+   - Updates the updated_at timestamp on row modification
+
+3. generate_entity_id(entity_name text) -> text
+   - Security: DEFINER
+   - Generates unique entity IDs in format: {entity_name}-{5-digit-random}
+
+4. auto_generate_entity_id() -> trigger
+   - Security: DEFINER
+   - Trigger function to auto-generate entity_id if not provided
+
+5. generate_sponsor_entity_id() -> text
+   - Security: DEFINER
+   - Generates unique sponsor entity IDs in format: sponsor-{5-digit-random}
+
+6. auto_generate_sponsor_entity_id() -> trigger
+   - Security: DEFINER
+   - Trigger function to auto-generate sponsor entity_id
+
+7. generate_practice_entity_id() -> text
+   - Security: DEFINER
+   - Generates unique practice entity IDs in format: practice-{5-digit-random}
+
+8. auto_generate_practice_entity_id() -> trigger
+   - Security: DEFINER
+   - Trigger function to auto-generate practice entity_id
+
+================================================================================
+STORAGE BUCKETS
+================================================================================
+
+1. organization-documents
+   - Public: No (Private)
+   - Used for storing organization-related documents
+
+================================================================================
+TABLES
+================================================================================
+
+--------------------------------------------------------------------------------
+TABLE: auth.users (Supabase Auth - Managed Table)
+--------------------------------------------------------------------------------
+Description: Core authentication table managed by Supabase Auth.
+             This table is in the 'auth' schema and should NOT be modified directly.
+             User authentication, sign-up, and sign-in are handled by Supabase Auth.
+
+IMPORTANT NOTES:
+- This table is managed by Supabase and should NOT have custom columns added
+- For additional user information, create a separate 'profiles' table in public schema
+- DO NOT create foreign key constraints to auth.users from public schema tables
+- Use user_id references without formal FK constraints
+
+KEY COLUMNS (Read-Only):
+- id: uuid, PRIMARY KEY
+  The unique identifier for each user, used for authentication
+
+- email: text, NULLABLE
+  User's email address used for authentication
+
+- encrypted_password: text
+  Encrypted password (managed by Supabase Auth)
+
+- email_confirmed_at: timestamp with time zone
+  Timestamp when email was confirmed
+
+- created_at: timestamp with time zone
+  When the user account was created
+
+- updated_at: timestamp with time zone
+  Last update timestamp
+
+- phone: text, NULLABLE
+  User's phone number if phone auth is enabled
+
+- phone_confirmed_at: timestamp with time zone
+  Timestamp when phone was confirmed
+
+- raw_user_meta_data: jsonb
+  Additional metadata stored during sign-up
+
+- role: text
+  Auth role (typically 'authenticated')
+
+- aud: text
+  Audience claim
+
+- last_sign_in_at: timestamp with time zone
+  Last successful sign-in timestamp
+
+RELATIONSHIPS:
+- user_roles table references auth.users(id) via user_id
+- user_entity_associations table references auth.users(id) via user_id
+- user_custom_roles table references auth.users(id) via user_id
+- Various tables use created_by field referencing auth.users(id)
+
+ACCESS:
+- Managed entirely by Supabase Auth service
+- Accessed via Supabase Auth API and SDK
+- Direct SQL access should be avoided
+- Use auth.uid() function in RLS policies to reference current user
+
+SECURITY:
+- All authentication handled by Supabase Auth
+- Passwords are encrypted and never exposed
+- RLS policies use auth.uid() to reference current authenticated user
+- Application roles stored separately in user_roles table
+
+--------------------------------------------------------------------------------
+TABLE: organizations
+--------------------------------------------------------------------------------
+Description: Stores organization/multi-site management entities
+
+COLUMNS:
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- created_at: timestamp with time zone, NULL, DEFAULT now()
+- updated_at: timestamp with time zone, NULL, DEFAULT now()
+- created_by: uuid, NULL
+- entity_legal_documents: jsonb, NULL, DEFAULT '[]'::jsonb
+- is_active: boolean, NOT NULL, DEFAULT true
+- name: text, NOT NULL
+- description: text, NULL
+- contact_email: text, NULL
+- contact_phone: text, NULL
+- address: text, NULL
+- entity_id: text, NULL
+- entity_owner_email: text, NOT NULL, DEFAULT ''::text
+- entity_primary_phone: text, NULL
+
+RLS POLICIES:
+1. "Super admins and multi-site managers can view all organizations"
+   - Command: SELECT
+   - Using: has_role(auth.uid(), 'super-admin') OR has_role(auth.uid(), 'multi-site-management')
+
+2. "Super admins can manage organizations"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin')
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: modules
+--------------------------------------------------------------------------------
+Description: Stores application modules for permission management
+
+COLUMNS:
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- created_at: timestamp with time zone, NULL, DEFAULT now()
+- name: text, NOT NULL
+- description: text, NULL
+
+RLS POLICIES:
+1. "Authenticated users can view modules"
+   - Command: SELECT
+   - Using: has_role(auth.uid(), 'super-admin') OR has_role(auth.uid(), 'multi-site-management')
+
+2. "Super admins can manage modules"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin')
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: trails
+--------------------------------------------------------------------------------
+Description: Stores clinical trial information
+
+COLUMNS:
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- start_date: date, NULL
+- end_date: date, NULL
+- created_by: uuid, NULL
+- created_at: timestamp with time zone, NULL, DEFAULT now()
+- updated_at: timestamp with time zone, NULL, DEFAULT now()
+- is_active: boolean, NOT NULL, DEFAULT true
+- nct_id: text, NULL
+- name: text, NOT NULL
+- description: text, NULL
+- status: text, NULL, DEFAULT 'active'::text
+
+RLS POLICIES:
+1. "Multi-site managers can manage trails in their org"
+   - Command: ALL
+   - Using: Complex query checking trail ownership through trail_sites and user_entity_associations
+
+2. "Super admins can manage trails"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin')
+
+3. "Users can view trails based on role and organization"
+   - Command: SELECT
+   - Using: Role-based access (super-admin, multi-site-management, sponsor, site)
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: trail_sites
+--------------------------------------------------------------------------------
+Description: Associates trials with sites (many-to-many relationship)
+
+COLUMNS:
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- trail_id: uuid, NOT NULL
+- site_id: uuid, NOT NULL
+- assigned_at: timestamp with time zone, NULL, DEFAULT now()
+- assigned_by: uuid, NULL
+
+RLS POLICIES:
+1. "Multi-site managers can manage trail sites"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'multi-site-management')
+
+2. "Sites can view their assigned trails"
+   - Command: SELECT
+   - Using: Site role with entity association check
+
+3. "Sponsors can view their trail sites"
+   - Command: SELECT
+   - Using: Sponsor role with trail ownership check
+
+4. "Super admins can manage trail sites"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin')
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: sponsor_sites
+--------------------------------------------------------------------------------
+Description: Associates sponsors with sites (many-to-many relationship)
+
+COLUMNS:
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- sponsor_id: uuid, NOT NULL
+- site_id: uuid, NOT NULL
+- assigned_at: timestamp with time zone, NULL, DEFAULT now()
+- assigned_by: uuid, NULL
+
+RLS POLICIES:
+1. "Multi-site managers can manage sponsor sites"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'multi-site-management')
+
+2. "Sponsors can view their assigned sites"
+   - Command: SELECT
+   - Using: Sponsor role with ownership check
+
+3. "Super admins can manage sponsor sites"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin')
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: patients
+--------------------------------------------------------------------------------
+Description: Stores patient information enrolled in trials
+
+COLUMNS:
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- date_of_birth: date, NULL
+- site_id: uuid, NULL
+- enrollment_date: date, NULL
+- created_at: timestamp with time zone, NULL, DEFAULT now()
+- updated_at: timestamp with time zone, NULL, DEFAULT now()
+- created_by: uuid, NULL
+- is_active: boolean, NOT NULL, DEFAULT true
+- status: text, NULL, DEFAULT 'active'::text
+- gender: text, NULL
+- patient_id: text, NOT NULL
+- first_name: text, NOT NULL
+- last_name: text, NOT NULL
+
+RLS POLICIES:
+1. "Authorized users can manage patients"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin') OR has_role(auth.uid(), 'site') OR has_role(auth.uid(), 'provider')
+
+2. "Users can view patients based on role and organization"
+   - Command: SELECT
+   - Using: Role-based access (super-admin, multi-site-management, site, provider)
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: sites
+--------------------------------------------------------------------------------
+Description: Stores clinical trial site/practice information
+
+COLUMNS:
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- created_at: timestamp with time zone, NULL, DEFAULT now()
+- updated_at: timestamp with time zone, NULL, DEFAULT now()
+- created_by: uuid, NULL
+- organization_id: uuid, NULL
+- is_active: boolean, NOT NULL, DEFAULT true
+- name: text, NOT NULL
+- location: text, NULL
+- contact_person: text, NULL
+- contact_email: text, NULL
+- contact_phone: text, NULL
+- entity_id: text, NULL
+- owner_email: text, NOT NULL, DEFAULT ''::text
+- primary_phone: text, NULL
+- address: text, NULL
+
+RLS POLICIES:
+1. "Multi-site managers can manage their organization sites"
+   - Command: ALL
+   - Using: Multi-site-management role with organization ownership check
+
+2. "Super admins can manage all sites"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin')
+
+3. "Users can view sites based on role and organization"
+   - Command: SELECT
+   - Using: Role-based access (super-admin, multi-site-management, site)
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: custom_roles
+--------------------------------------------------------------------------------
+Description: Stores custom roles created by entity administrators
+
+COLUMNS:
+- permissions: jsonb, NULL, DEFAULT '[]'::jsonb
+- created_by: uuid, NULL
+- created_at: timestamp with time zone, NULL, DEFAULT now()
+- updated_at: timestamp with time zone, NULL, DEFAULT now()
+- entity_id: uuid, NULL
+- is_active: boolean, NOT NULL, DEFAULT true
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- name: text, NOT NULL
+- description: text, NULL
+- entity_type: text, NOT NULL
+
+RLS POLICIES:
+1. "Entity admins can view their roles"
+   - Command: SELECT
+   - Using: Role-based access for entity administrators
+
+2. "Super admins can manage custom roles"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin')
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: user_entity_associations
+--------------------------------------------------------------------------------
+Description: Associates users with entities (organizations, sponsors, sites, providers)
+
+COLUMNS:
+- created_at: timestamp with time zone, NULL, DEFAULT now()
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- user_id: uuid, NOT NULL
+- entity_id: uuid, NOT NULL
+- created_by: uuid, NULL
+- entity_type: text, NOT NULL (values: 'organization', 'sponsor', 'site', 'provider')
+
+RLS POLICIES:
+1. "Super admins can manage user entity associations"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin')
+
+2. "Super admins can view all user entity associations"
+   - Command: SELECT
+   - Using: has_role(auth.uid(), 'super-admin')
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: user_roles
+--------------------------------------------------------------------------------
+Description: Stores user role assignments (primary roles)
+
+COLUMNS:
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- user_id: uuid, NOT NULL
+- role: app_role (enum), NOT NULL
+- created_at: timestamp with time zone, NULL, DEFAULT now()
+- is_active: boolean, NOT NULL, DEFAULT true
+
+RLS POLICIES:
+1. "Super admins can manage all roles"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin')
+
+2. "Users can view their own roles"
+   - Command: SELECT
+   - Using: user_id = auth.uid()
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: sponsor_trails
+--------------------------------------------------------------------------------
+Description: Associates sponsors with trails (many-to-many relationship)
+
+COLUMNS:
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- sponsor_id: uuid, NOT NULL
+- trail_id: uuid, NOT NULL
+- can_edit: boolean, NULL, DEFAULT false
+- assigned_at: timestamp with time zone, NULL, DEFAULT now()
+- assigned_by: uuid, NULL
+
+RLS POLICIES:
+1. "Multi-site managers can manage sponsor trail assignments"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'multi-site-management')
+
+2. "Sponsors can view their trail assignments"
+   - Command: SELECT
+   - Using: Sponsor role with ownership check
+
+3. "Super admins can manage sponsor trail assignments"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin')
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: user_custom_roles
+--------------------------------------------------------------------------------
+Description: Assigns custom roles to users
+
+COLUMNS:
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- user_id: uuid, NOT NULL
+- custom_role_id: uuid, NULL
+- entity_id: uuid, NULL
+- assigned_by: uuid, NULL
+- assigned_at: timestamp with time zone, NULL, DEFAULT now()
+
+RLS POLICIES:
+1. "Entity admins can assign roles"
+   - Command: INSERT
+   - With Check: Role-based access for entity administrators
+
+2. "Super admins can manage custom role assignments"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin')
+
+3. "Users can view their custom roles"
+   - Command: SELECT
+   - Using: user_id = auth.uid()
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: sponsors
+--------------------------------------------------------------------------------
+Description: Stores clinical trial sponsor information
+
+COLUMNS:
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- created_at: timestamp with time zone, NULL, DEFAULT now()
+- updated_at: timestamp with time zone, NULL, DEFAULT now()
+- created_by: uuid, NULL
+- entity_legal_documents: jsonb, NULL, DEFAULT '[]'::jsonb
+- is_active: boolean, NOT NULL, DEFAULT true
+- entity_id: text, NULL
+- owner_email: text, NOT NULL, DEFAULT ''::text
+- primary_phone: text, NULL
+- address: text, NULL
+- name: text, NOT NULL
+- contact_person: text, NULL
+- contact_email: text, NULL
+- contact_phone: text, NULL
+
+RLS POLICIES:
+1. "Authenticated users can view sponsors"
+   - Command: SELECT
+   - Using: has_role(auth.uid(), 'super-admin') OR has_role(auth.uid(), 'multi-site-management') OR has_role(auth.uid(), 'sponsor')
+
+2. "Super admins and multi-site managers can manage sponsors"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin') OR has_role(auth.uid(), 'multi-site-management')
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: role_permissions
+--------------------------------------------------------------------------------
+Description: Stores permissions for predefined roles by module
+
+COLUMNS:
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- role: app_role (enum), NOT NULL
+- module_id: uuid, NOT NULL
+- can_view: boolean, NULL, DEFAULT false
+- can_create: boolean, NULL, DEFAULT false
+- can_edit: boolean, NULL, DEFAULT false
+- can_delete: boolean, NULL, DEFAULT false
+- created_at: timestamp with time zone, NULL, DEFAULT now()
+
+RLS POLICIES:
+1. "Authenticated users can view role permissions"
+   - Command: SELECT
+   - Using: has_role(auth.uid(), 'super-admin') OR has_role(auth.uid(), 'multi-site-management')
+
+2. "Super admins can manage role permissions"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin')
+
+FOREIGN KEYS: None
+
+--------------------------------------------------------------------------------
+TABLE: providers
+--------------------------------------------------------------------------------
+Description: Stores healthcare provider information
+
+COLUMNS:
+- id: uuid, NOT NULL, PRIMARY KEY, DEFAULT gen_random_uuid()
+- site_id: uuid, NULL
+- created_at: timestamp with time zone, NULL, DEFAULT now()
+- updated_at: timestamp with time zone, NULL, DEFAULT now()
+- created_by: uuid, NULL
+- is_active: boolean, NOT NULL, DEFAULT true
+- first_name: text, NOT NULL
+- last_name: text, NOT NULL
+- email: text, NOT NULL
+- phone: text, NULL
+- specialty: text, NULL
+
+RLS POLICIES:
+1. "Authorized users can manage providers"
+   - Command: ALL
+   - Using: has_role(auth.uid(), 'super-admin') OR has_role(auth.uid(), 'site')
+
+2. "Users can view providers based on role and organization"
+   - Command: SELECT
+   - Using: Role-based access (super-admin, multi-site-management, sponsor, site, provider)
+
+FOREIGN KEYS: None
+
+================================================================================
+DATABASE TRIGGERS
+================================================================================
+
+Currently, no triggers are configured in the database.
+
+================================================================================
+SECURITY NOTES
+================================================================================
+
+1. All tables use Row-Level Security (RLS) policies
+2. Authentication is handled through Supabase Auth
+3. User roles are stored separately in user_roles table (not on user profiles)
+4. Security definer functions are used to prevent RLS recursion
+5. Role hierarchy:
+   - super-admin: Full system access
+   - multi-site-management: Organization-level access
+   - sponsor: Sponsor-level access to trials and sites
+   - site: Site-level access to patients and providers
+   - provider: Limited access to patients
+
+================================================================================
+ENTITY RELATIONSHIPS
+================================================================================
+
+Organizations (1) -> (Many) Sites
+Sites (Many) <-> (Many) Trails (through trail_sites)
+Sponsors (Many) <-> (Many) Trails (through sponsor_trails)
+Sponsors (Many) <-> (Many) Sites (through sponsor_sites)
+Sites (1) -> (Many) Patients
+Sites (1) -> (Many) Providers
+Users (Many) <-> (Many) Entities (through user_entity_associations)
+Users (Many) <-> (Many) Roles (through user_roles)
+Users (Many) <-> (Many) Custom Roles (through user_custom_roles)
+
+================================================================================
+END OF SCHEMA DOCUMENTATION
+================================================================================
