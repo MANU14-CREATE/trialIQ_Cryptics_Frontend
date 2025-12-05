@@ -1429,7 +1429,7 @@ Content-Type: application/json
 
 ### Update Sponsor
 
-#### PATCH `/api/sponsors/:id`
+#### PATCH `/api/sponsors/:id` it is PUT not PATCH
 
 Update a sponsor's details.
 

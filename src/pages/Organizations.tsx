@@ -179,21 +179,7 @@ export default function Organizations() {
   };
 
 
-  // const filteredAndSortedOrganizations = organizations?.filter((org) => {
-  //   const searchLower = searchTerm?.toLowerCase();
-  //   return (
-  //     org?.name?.toLowerCase().includes(searchLower) ||
-  //     (org?.entity_id && org?.entity_id?.toLowerCase().includes(searchLower)) ||
-  //     (org?.entity_owner_email && org?.entity_owner_email?.toLowerCase().includes(searchLower))
-  //   );
-  // })
-  //   .sort((a, b) => {
-  //     if (!sortField) return 0;
-  //     const aValue = a[sortField] || "";
-  //     const bValue = b[sortField] || "";
-  //     const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-  //     return sortDirection === "asc" ? comparison : -comparison;
-  //   });
+
 
   if (userLoading) {
     return (
@@ -595,6 +581,8 @@ function OrganizationForm({
   const [newDocTags, setNewDocTags] = useState("");
   const [newDocFile, setNewDocFile] = useState<File | null>(null);
   const [sendDocsItems, setSendDocsItems] = useState(null);
+  const [existingDocs, setExistingDocs] = useState([]);
+  const [docDeleteFlag, setDocDeleteFlag] = useState(false)
 
   const { toast } = useToast();
   const [loading, setLoading] = useState(false)
@@ -603,7 +591,6 @@ function OrganizationForm({
   const [triggerSubmit, setTriggerSubmit] = useState(false);
   useEffect(() => {
     if (organization) {
-      console.log(organization)
       const { user, address, description, is_active,
         contact_person_name, contact_person_email, contact_person_phone,
       } = organization;
@@ -628,6 +615,9 @@ function OrganizationForm({
         try {
           let result: any;
           result = await apiService.getOrganizationDocs(id)
+          if (!result) return;
+          console.log(result)
+          setExistingDocs(result)
         } catch (error: any) {
           toast({
             title: "Error",
@@ -640,7 +630,7 @@ function OrganizationForm({
       };
       getDocs();
     }
-  }, [organization])
+  }, [organization, docDeleteFlag])
 
   useEffect(() => {
     if (!triggerSubmit) return;
@@ -649,6 +639,7 @@ function OrganizationForm({
       try {
         let result: any;
         let docResult: any;
+
         let newItems = {
           name: name,
           email: email,
@@ -662,8 +653,11 @@ function OrganizationForm({
           is_active: isActive
         };
         if (organization) {
-          // result = await apiService.updateOrganization(organization.id, newItems);
-          docResult = await apiService.updateOrganizationDocs(organization.id, sendDocsItems);
+          if (newItems.password === null || newItems.password === "") {
+            delete newItems.password;
+          }
+          result = await apiService.updateOrganization(organization.id, newItems);
+          docResult = await apiService.createOrganizationDocs(organization.id, sendDocsItems);
         } else {
           result = await apiService.createOrganization(newItems);
           docResult = await apiService.createOrganizationDocs(result.organization.id, sendDocsItems);
@@ -787,6 +781,29 @@ function OrganizationForm({
     setFormData({ ...formData, entity_legal_documents: updatedDocs });
   };
 
+  const deleteExistingDocument = (doc: any) => {
+    const deleteData = async () => {
+      setLoading(true)
+      try {
+        let result: any;
+        result = await apiService.deleteOrganizationDoc(organization.id, doc.id)
+        toast({
+          title: "Document Deleted"
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false)
+        setDocDeleteFlag(!docDeleteFlag);
+      }
+    };
+    deleteData()
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
@@ -810,8 +827,8 @@ function OrganizationForm({
             required
           />
         </div>
-        <div style={{ display: organization ? "none" : "" }}>
-          <Label htmlFor="password">Password</Label>
+        <div >
+          <Label htmlFor="password">{organization ? "Change " : ""}Password</Label>
           <Input
             id="password"
             type="password"
@@ -852,13 +869,40 @@ function OrganizationForm({
 
 
 
-      <div className="space-y-3">
+      <div className="space-y-3" >
         <Label>Organisation Legal Documents</Label>
+        <div className="bg-muted/30 p-3 border rounded-lg" style={{ display: existingDocs.length > 0 ? "" : "none" }}>
+          <p className="mb-2 font-medium text-sm">Existing Documents:</p>
+          <div className="space-y-2">
+            {existingDocs.map((doc: any, idx: number) => (
+              <div key={idx} className="flex justify-between items-center bg-background p-2 rounded">
+                <div className="flex flex-1 items-center gap-2">
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{doc?.document_name}</p>
+                    {doc.document_tags && <p className="text-muted-foreground text-xs">{doc?.document_tags}</p>}
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => deleteExistingDocument(doc)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Existing Documents */}
         {formData.entity_legal_documents && Array.isArray(formData.entity_legal_documents) && formData.entity_legal_documents.length > 0 && (
           <div className="bg-muted/30 p-3 border rounded-lg">
-            <p className="mb-2 font-medium text-sm">Existing Documents:</p>
+            <p className="mb-2 font-medium text-sm">
+              {/* Existing Documents: */}
+              New Added Documents:
+            </p>
             <div className="space-y-2">
               {formData.entity_legal_documents.map((doc: any, idx: number) => (
                 <div key={idx} className="flex justify-between items-center bg-background p-2 rounded">

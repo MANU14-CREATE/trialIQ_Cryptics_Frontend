@@ -85,7 +85,7 @@ export default function Dashboard() {
     },
     {
       id: "trails" as DashboardModule,
-      label: "Trial",
+      label: "Trials",
       icon: Beaker,
       gradient: "from-purple-500 via-purple-400 to-purple-600",
       iconColor: "text-purple-500"

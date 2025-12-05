@@ -16,6 +16,7 @@ import Providers from "./pages/Providers";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import UserManagement from "./pages/UserManagement";
+import Trials1 from "./pages/trials1";
 
 const queryClient = new QueryClient();
 

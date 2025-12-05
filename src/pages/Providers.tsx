@@ -38,9 +38,95 @@ interface Provider {
   last_name: string;
   email: string;
   phone: string | null;
-  specialty: string | null;
+  speciality: string | null;
   site_id: string | null;
   created_at: string;
+  user: {
+    name: string;
+    email: string;
+    phone: string;
+  }
+}
+
+
+
+interface CustomRole {
+  id: string;
+  name: string;
+  description: string;
+  entity_type: string;
+  entity_id?: string;
+  permissions: string[];
+  created_at: string;
+}
+
+interface Entity {
+  id: string;
+  name: string;
+  entity_id?: string;
+}
+
+interface ModuleInfo {
+  id: string;
+  name: string;
+  description: string;
+}
+
+interface Permission {
+  id: string;
+  role_id: string;
+  module_id: string;
+  can_view: boolean;
+  can_create: boolean;
+  can_edit: boolean;
+  can_delete: boolean;
+  module: ModuleInfo;
+}
+
+interface Role {
+  id: string;
+  name: string;
+  description: string;
+  entity_id: string | null;
+  entity_type: string;
+  permissions: Permission[];
+}
+
+interface User {
+  id: string;
+  email: string;
+  phone: string | null;
+  role: Role;
+  name: string;
+}
+
+interface InputItem {
+  id: string;
+  user: User;
+  user_id: string;
+}
+
+interface ExtractedRole {
+  id: string;
+  name: string;
+  description: string;
+  entity_id: string | null;
+  entity_type: string;
+}
+
+function extractRoles(data: InputItem[]): ExtractedRole[] {
+  if (!Array.isArray(data)) return [];
+
+  return data.map((item) => {
+    const role = item.user.role;
+    return {
+      id: item.id || "",
+      name: item?.user?.name || "",
+      description: role?.description || "",
+      entity_id: item?.user_id || null,
+      entity_type: role?.entity_type || "",
+    };
+  });
 }
 
 export default function Providers() {
@@ -90,18 +176,18 @@ export default function Providers() {
   };
 
   const getSortIcon = (field: keyof Provider) => {
-    if (sortField !== field) return <ArrowUpDown className="h-4 w-4 ml-1" />;
-    return sortDirection === "asc" ? <ArrowUp className="h-4 w-4 ml-1" /> : <ArrowDown className="h-4 w-4 ml-1" />;
+    if (sortField !== field) return <ArrowUpDown className="ml-1 w-4 h-4" />;
+    return sortDirection === "asc" ? <ArrowUp className="ml-1 w-4 h-4" /> : <ArrowDown className="ml-1 w-4 h-4" />;
   };
 
-  const filteredAndSortedProviders = providers
+  const filteredAndSortedProviders = providers?.providers
     ?.filter((provider) => {
       const searchLower = searchTerm.toLowerCase();
       return (
-        provider.first_name.toLowerCase().includes(searchLower) ||
-        provider.last_name.toLowerCase().includes(searchLower) ||
-        provider.email.toLowerCase().includes(searchLower) ||
-        (provider.specialty && provider.specialty.toLowerCase().includes(searchLower))
+        // provider.first_name.toLowerCase().includes(searchLower) ||
+        provider?.user?.name.toLowerCase().includes(searchLower)
+        // provider.email.toLowerCase().includes(searchLower) ||
+        // (provider.specialty && provider.specialty.toLowerCase().includes(searchLower))
       );
     })
     .sort((a, b) => {
@@ -114,9 +200,9 @@ export default function Providers() {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex justify-center items-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <div className="mx-auto border-primary border-b-2 rounded-full w-8 h-8 animate-spin"></div>
           <p className="mt-2 text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -131,15 +217,15 @@ export default function Providers() {
     <SidebarProvider>
       <AppSidebar userRole={userData.role} userName={userData.userName} />
       <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="mx-auto p-6 container">
+          <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
-              <h1 className="text-3xl font-bold">Providers</h1>
+              <h1 className="font-bold text-3xl">Providers</h1>
             </div>
             <div className="flex items-center gap-4">
               <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="top-1/2 left-3 absolute w-4 h-4 text-muted-foreground -translate-y-1/2 transform" />
                 <Input
                   placeholder="Search providers..."
                   value={searchTerm}
@@ -150,79 +236,92 @@ export default function Providers() {
               <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogTrigger asChild>
                   <Button onClick={handleAdd}>
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="mr-2 w-4 h-4" />
                     Add Provider
                   </Button>
                 </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>
-                    {editingProvider ? "Edit Provider" : "Add Provider"}
-                  </DialogTitle>
-                </DialogHeader>
-                <ProviderForm
-                  provider={editingProvider}
-                  onSuccess={() => {
-                    setIsOpen(false);
-                    queryClient.invalidateQueries({ queryKey: ["providers"] });
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingProvider ? "Edit Provider" : "Add Provider"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <ProviderForm
+                    provider={editingProvider}
+                    onSuccess={() => {
+                      setIsOpen(false);
+                      queryClient.invalidateQueries({ queryKey: ["providers"] });
+                    }}
+                  />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
           {isLoading ? (
             <div>Loading...</div>
           ) : (
-            <div className="rounded-lg border bg-card">
+            <div className="bg-card border rounded-lg">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>
-                      <Button variant="ghost" onClick={() => handleSort("first_name")} className="hover:bg-transparent p-0 h-auto font-semibold">
-                        Name {getSortIcon("first_name")}
-                      </Button>
+                      <button
+                        // onClick={() => handleSort("name")}
+                        className="flex items-center hover:text-foreground"
+                      >
+                        Name
+                        {/* {getSortIcon("name")} */}
+                      </button>
                     </TableHead>
                     <TableHead>
-                      <Button variant="ghost" onClick={() => handleSort("email")} className="hover:bg-transparent p-0 h-auto font-semibold">
-                        Email {getSortIcon("email")}
-                      </Button>
+                      <button
+                        // onClick={() => handleSort("name")}
+                        className="flex items-center hover:text-foreground"
+                      >
+                        Email
+                        {/* {getSortIcon("name")} */}
+                      </button>
                     </TableHead>
+
                     <TableHead>Phone</TableHead>
                     <TableHead>
-                      <Button variant="ghost" onClick={() => handleSort("specialty")} className="hover:bg-transparent p-0 h-auto font-semibold">
-                        Specialty {getSortIcon("specialty")}
-                      </Button>
+                      <button
+                        // onClick={() => handleSort("name")}
+                        className="flex items-center hover:text-foreground"
+                      >
+                        Specialty
+                        {/* {getSortIcon("name")} */}
+                      </button>
                     </TableHead>
                     <TableHead>Site</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
-              <TableBody>
-                {filteredAndSortedProviders?.map((provider) => (
+                <TableBody>
+                  {filteredAndSortedProviders?.map((provider) => (
                     <TableRow key={provider.id}>
                       <TableCell className="font-medium">
-                        {provider.first_name} {provider.last_name}
+                        {provider?.user?.name}
                       </TableCell>
-                      <TableCell>{provider.email}</TableCell>
-                      <TableCell>{provider.phone || "-"}</TableCell>
-                      <TableCell>{provider.specialty || "-"}</TableCell>
-                      <TableCell>-</TableCell>
+                      <TableCell>{provider?.user?.email}</TableCell>
+                      <TableCell>{provider?.user?.phone || "-"}</TableCell>
+                      <TableCell>{provider.speciality || "-"}</TableCell>
+                      <TableCell>{provider.site_id || "-"}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => handleEdit(provider)}
                         >
-                          <Pencil className="h-4 w-4" />
+                          <Pencil className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => deleteMutation.mutate(provider.id)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -245,18 +344,21 @@ function ProviderForm({
   onSuccess: () => void;
 }) {
   const [formData, setFormData] = useState({
-    first_name: provider?.first_name || "",
-    last_name: provider?.last_name || "",
-    email: provider?.email || "",
-    phone: provider?.phone || "",
-    specialty: provider?.specialty || "",
+    name: provider?.user?.name || "",
+    password: provider?.last_name || "",
+    email: provider?.user?.email || "",
+    phone: provider?.user?.phone || "",
+    speciality: provider?.speciality || "",
     site_id: provider?.site_id || "",
   });
   const { toast } = useToast();
 
   const { data: sites } = useQuery({
     queryKey: ["sites"],
-    queryFn: async () => await apiService.getSites(),
+    queryFn: async () => {
+      const data = await apiService.getSites()
+      return extractRoles(data.sites)
+    },
   });
 
   const mutation = useMutation({
@@ -283,40 +385,40 @@ function ProviderForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="gap-4 grid grid-cols-2">
         <div>
-          <Label htmlFor="first_name">First Name *</Label>
+          <Label htmlFor="name">Name *</Label>
           <Input
-            id="first_name"
-            value={formData.first_name}
+            id="name"
+            value={formData.name}
             onChange={(e) =>
-              setFormData({ ...formData, first_name: e.target.value })
+              setFormData({ ...formData, name: e.target.value })
             }
             required
           />
         </div>
         <div>
-          <Label htmlFor="last_name">Last Name *</Label>
+          <Label htmlFor="email">Email *</Label>
           <Input
-            id="last_name"
-            value={formData.last_name}
+            id="email"
+            type="email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="password">Password *</Label>
+          <Input
+            id="password"
+            type="password"
+            value={formData.password}
             onChange={(e) =>
-              setFormData({ ...formData, last_name: e.target.value })
+              setFormData({ ...formData, password: e.target.value })
             }
             required
           />
         </div>
-      </div>
-
-      <div>
-        <Label htmlFor="email">Email *</Label>
-        <Input
-          id="email"
-          type="email"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          required
-        />
       </div>
 
       <div>
@@ -329,11 +431,11 @@ function ProviderForm({
       </div>
 
       <div>
-        <Label htmlFor="specialty">Specialty</Label>
+        <Label htmlFor="speciality">Speciality</Label>
         <Input
-          id="specialty"
-          value={formData.specialty}
-          onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
+          id="speciality"
+          value={formData.speciality}
+          onChange={(e) => setFormData({ ...formData, speciality: e.target.value })}
         />
       </div>
 

@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Switch } from "@/components/ui/switch";
+import { useDebounce } from "./Organizations";
 
 interface Sponsor {
   id: string;
@@ -66,12 +67,17 @@ export default function Sponsors() {
   const [trialsList, setTrialsList] = useState([])
   const [hadChanged, setHadChanged] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  const [mainSponsors, setMainSponsors] = useState([])
+
   useEffect(() => {
     const fetchD = async () => {
       try {
         const data = await apiService.getSponsors();
         if (!data) return;
         setSponsorsList(data.sponsors)
+        setMainSponsors(data.sponsors)
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {
@@ -80,6 +86,37 @@ export default function Sponsors() {
     };
     fetchD();
   }, [hadChanged])
+
+  useEffect(() => {
+    let filtered = [...mainSponsors]; // original list
+    const sortByUserName = (list: any, direction = "asc") => {
+      return [...list].sort((a, b) => {
+        const result = a.user.name.localeCompare(b.user.name);
+        return direction === "asc" ? result : -result;
+      });
+    }
+    // 🔍 SEARCH FILTER
+    if (debouncedSearch.trim() !== "") {
+      filtered = filtered.filter((org) =>
+        org.user.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+      );
+    }
+
+    // 🔠 SORT
+    const sorted = sortByUserName(filtered, sortDirection);
+
+    setSponsorsList(sorted);
+  }, [debouncedSearch, sortField, sortDirection]);
+  const handleSort = (field: keyof Sponsor) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+
 
   useEffect(() => {
     const fetchD = async () => {
@@ -148,36 +185,51 @@ export default function Sponsors() {
     setIsOpen(true);
   };
 
-  const handleSort = (field: keyof Sponsor) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
 
+  const assignSitesToSponsor = () => {
+    try {
+      let result: any
+      // const data ;
+    } catch (error) {
+
+    } finally {
+
+    }
+  }
   const getSortIcon = (field: keyof Sponsor) => {
     if (sortField !== field) return <ArrowUpDown className="ml-1 w-4 h-4" />;
     return sortDirection === "asc" ? <ArrowUp className="ml-1 w-4 h-4" /> : <ArrowDown className="ml-1 w-4 h-4" />;
   };
 
-  // const filteredAndSortedSponsors = sponsors
-  //   ?.filter((sponsor) => {
-  //     const searchLower = searchTerm.toLowerCase();
-  //     return (
-  //       sponsor.name.toLowerCase().includes(searchLower) ||
-  //       (sponsor.entity_id && sponsor.entity_id.toLowerCase().includes(searchLower)) ||
-  //       (sponsor.contact_person && sponsor.contact_person.toLowerCase().includes(searchLower))
-  //     );
-  //   })
-  //   .sort((a, b) => {
-  //     if (!sortField) return 0;
-  //     const aValue = a[sortField] || "";
-  //     const bValue = b[sortField] || "";
-  //     const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-  //     return sortDirection === "asc" ? comparison : -comparison;
-  //   });
+
+  const [selectedTrials, setSelectedTrials] = useState<number[]>([]);
+
+  // Toggle selection
+  const handleCheckboxChange = (trialId: number) => {
+    setSelectedTrials((prev) =>
+      prev.includes(trialId)
+        ? prev.filter((id) => id !== trialId)
+        : [...prev, trialId]
+    );
+  };
+
+  // Submit selected trials
+  const handleAssignTrials = () => {
+    if (selectedTrials.length === 0) {
+      alert("Please select at least one trial");
+      return;
+    }
+
+    console.log("Assigned Trials:", selectedTrials);
+
+    // Example API call
+    // await api.assignTrials({ trialIds: selectedTrials });
+
+    // Clear selection after assign
+    setSelectedTrials([]);
+  };
+
+
 
   if (userLoading) {
     return (
@@ -256,11 +308,11 @@ export default function Sponsors() {
                     </TableHead>
                     <TableHead>
                       <button
-                        // onClick={() => handleSort("name")}
+                        onClick={() => handleSort("name")}
                         className="flex items-center hover:text-foreground"
                       >
                         Name
-                        {/* {getSortIcon("name")} */}
+                        {getSortIcon("name")}
                       </button>
                     </TableHead>
                     <TableHead>
@@ -429,7 +481,7 @@ export default function Sponsors() {
               <DialogTitle>Assign Trials to {assigningTrials?.user?.name}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              {trialsList?.map((trial: any) => (
+              {/* {trialsList?.map((trial: any) => (
                 <div key={trial.id} className="flex justify-between items-center p-3 border rounded">
                   <div>
                     <p className="font-medium">{trial.name}</p>
@@ -438,7 +490,29 @@ export default function Sponsors() {
                   <Checkbox />
                 </div>
               ))}
-              <Button className="w-full">Assign Trials</Button>
+              <Button className="w-full">Assign Trials</Button> */}
+              {trialsList?.map((trial: any) => (
+                <div
+                  key={trial.id}
+                  className="flex justify-between items-center p-3 border rounded"
+                >
+                  <div>
+                    <p className="font-medium">{trial.name}</p>
+                    <p className="text-muted-foreground text-sm">
+                      Status: {trial.status}
+                    </p>
+                  </div>
+
+                  <Checkbox
+                    checked={selectedTrials.includes(trial.id)}
+                    onCheckedChange={() => handleCheckboxChange(trial.id)}
+                  />
+                </div>
+              ))}
+
+              <Button className="w-full" onClick={handleAssignTrials}>
+                Assign Trials
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -504,6 +578,8 @@ function SponsorForm({
   const [loading, setLoading] = useState(false)
   const [triggerSubmit, setTriggerSubmit] = useState(false);
   const { toast } = useToast();
+  const [existingDocs, setExistingDocs] = useState([]);
+  const [docDeleteFlag, setDocDeleteFlag] = useState(false)
 
 
 
@@ -550,6 +626,9 @@ function SponsorForm({
         try {
           let result: any;
           result = await apiService.getSponsorDocs(id)
+          if (!result) result;
+          console.log("---------")
+          setExistingDocs(result)
         } catch (error: any) {
           toast({
             title: "Error",
@@ -562,15 +641,17 @@ function SponsorForm({
       };
       getDocs();
     }
-  }, [sponsor])
+
+  }, [sponsor, docDeleteFlag])
 
   useEffect(() => {
     if (!triggerSubmit) return;
     const submitData = async () => {
       setLoading(true)
+      let result: any;
+      let docResult: any;
       try {
-        let result: any;
-        let docResult: any;
+
         let newItems = {
           name: name,
           email: email,
@@ -580,8 +661,11 @@ function SponsorForm({
           is_active: is_active
         };
         if (sponsor) {
-          // result = await apiService.updateOrganization(organization.id, newItems);
+          if (newItems.password === null || newItems.password === "") {
+            delete newItems.password;
+          }
           docResult = await apiService.updateSponsor(sponsor.id, newItems);
+          docResult = await apiService.createSponsorDocs(sponsor.id, sendDocsItems);
         } else {
           result = await apiService.createSponsor(newItems);
           docResult = await apiService.createSponsorDocs(result.sponsor.id, sendDocsItems);
@@ -590,12 +674,12 @@ function SponsorForm({
         toast({
           title: sponsor ? "Sponsor updated" : "Sponsor created"
         });
-
         onSuccess();
       } catch (error: any) {
+        console.log(result);
         toast({
           title: "Error",
-          description: error.message,
+          description: result ? result.error.message : " Something went wrong",
           variant: "destructive",
         });
       } finally {
@@ -679,6 +763,29 @@ function SponsorForm({
     setFormData({ ...formData, entity_legal_documents: updatedDocs });
   };
 
+  const deleteExistingDocument = (doc: any) => {
+    const deleteData = async () => {
+      setLoading(true)
+      try {
+        let result: any;
+        result = await apiService.deleteSponsorDoc(sponsor.id, doc.id)
+        toast({
+          title: "Document Deleted"
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false)
+        setDocDeleteFlag(!docDeleteFlag);
+      }
+    };
+    deleteData()
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
@@ -702,7 +809,7 @@ function SponsorForm({
             required
           />
         </div>
-        <div style={{ display: sponsor ? "none" : "" }}>
+        <div >
           <Label htmlFor="password">Password *</Label>
           <Input
             id="password"
@@ -763,6 +870,30 @@ function SponsorForm({
       <div className="space-y-3">
         <Label>Entity Legal Documents</Label>
         {/* Existing Documents */}
+        <div className="bg-muted/30 p-3 border rounded-lg" style={{ display: existingDocs.length > 0 ? "" : "none" }}>
+          <p className="mb-2 font-medium text-sm">Existing Documents:</p>
+          <div className="space-y-2">
+            {existingDocs.map((doc: any, idx: number) => (
+              <div key={idx} className="flex justify-between items-center bg-background p-2 rounded">
+                <div className="flex flex-1 items-center gap-2">
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{doc?.document_name}</p>
+                    {doc.document_tags && <p className="text-muted-foreground text-xs">{doc?.document_tags}</p>}
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => deleteExistingDocument(doc)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
         {formData.entity_legal_documents && Array.isArray(formData.entity_legal_documents) && formData.entity_legal_documents.length > 0 && (
           <div className="bg-muted/30 p-3 border rounded-lg">
             <p className="mb-2 font-medium text-sm">Existing Documents:</p>

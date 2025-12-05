@@ -151,11 +151,16 @@ export function GET_ORGANISATION_DOCUMENT_API(orgId: any, docId: any, cb: any) {
     cb(res);
   });
 } // get single document
-export function UPDATE_ORGANISATION_DOCUMENT_API(orgId: any, docId: any, cb: any) {
-  API.PUT(PATHS.ORGANIZATION_DOCUMENT_BY_ID_API(orgId, docId), {}, {}, (res: any) => {
+export function UPDATE_ORGANISATION_DOCUMENT_API(orgId: any, data: any, cb: any) {
+  API.PUT(PATHS.ORGANIZATION_DOCUMENTS_BY_ID_API(orgId), data, {}, (res: any) => {
     cb(res);
   });
 } // update single document
+export function DELETE_ORGANISATION_DOC_API(orgId: any, docId: any, cb: any) {
+  API.DELETE(PATHS.ORGANIZATION_DOCUMENT_BY_ID_API(orgId, docId), {}, (res: any) => {
+    cb(res);
+  });
+} // detete single document
 
 export function DELETE_ORGANISATION_DOCUMENT_API(id: any, docId: any, cb: any) {
   API.DELETE(PATHS.ORGANIZATION_DOCUMENT_BY_ID_API(id, docId), {}, (res: any) => {
@@ -181,7 +186,7 @@ export function CREATE_TRIAL_API(data: any, cb: any) {
     cb(res);
   });
 }
-export function EDIT_TRIAL_API(id: any, data: any, cb: any) {
+export function UPDATE_TRIAL_API(id: any, data: any, cb: any) {
   API.PUT(PATHS.TRIALS_BY_ID_API(id), data, {}, (res: any) => {
     cb(res);
   });
@@ -193,14 +198,14 @@ export function DELETE_TRIAL_API(id: any, cb: any) {
   });
 }
 
-export function ASSIGN_SPONSOR_TO_TRIAL_API(id: any, cb: any) {
-  API.POST(PATHS.ASSIGN_SPONSOR_TO_TRIALS(id), {}, {}, (res: any) => {
+export function ASSIGN_SPONSOR_TO_TRIAL_API(id: any, data: any, cb: any) {
+  API.POST(PATHS.ASSIGN_SPONSOR_TO_TRIALS(id), data, {}, (res: any) => {
     cb(res);
   });
 }
 
-export function ASSIGN_SITE_TO_TRIAL_API(id: any, cb: any) {
-  API.POST(PATHS.ASSIGN_SITE_TO_TRIALS(id), {}, {}, (res: any) => {
+export function ASSIGN_SITE_TO_TRIAL_API(id: any, data: any, cb: any) {
+  API.POST(PATHS.ASSIGN_SITE_TO_TRIALS(id), data, {}, (res: any) => {
     cb(res);
   });
 }
@@ -223,7 +228,7 @@ export function CREATE_SPONSOR_API(data: any, cb: any) {
 }
 
 export function UPDATE_SPONSOR_API(spoId: any, data: any, cb: any) {
-  API.PATCH(PATHS.SPONSOR_BY_ID_API(spoId), data, {}, (res: any) => {
+  API.PUT(PATHS.SPONSOR_BY_ID_API(spoId), data, {}, (res: any) => {
     cb(res);
   });
 }
@@ -282,6 +287,45 @@ export function DELETE_SITE_API(id: any, cb: any) {
   API.DELETE(PATHS.SITE_BY_ID_API(id), {}, (res: any) => {
     cb(res);
   });
+}
+
+// providers
+
+export function CREATE_PROVIDER_API(data: any, cb: any) {
+  API.POST(PATHS.PROVIDERS_API, data, {}, (res: any) => {
+    cb(res);
+  });
+}
+
+export function UPDATE_PROVIDER_API(id: any, data: any, cb: any) {
+  API.PUT(PATHS.PROVIDER_BY_ID_API(id), data, {}, (res: any) => {
+    cb(res);
+  });
+}
+
+export function DELETE_PROVIDER_API(id: any, cb: any) {
+  API.DELETE(PATHS.PROVIDER_BY_ID_API(id), {}, (res: any) => {
+    cb(res);
+  });
+}
+
+// trials extra api
+export function FETCH_TRIAL_DETAILS_API(data: any, cb: any) {
+  API.GENERAL(PATHS.FETCH_TRIAL_DETAILS, "POST", data, {}, {
+    accept: 'application/json',
+    ContentType: 'application/json'
+  }, (res: any) => {
+    cb(res);
+  })
+}
+
+export function EDIT_TRIAL_DETAILS_API(data: any, cb: any) {
+  API.GENERAL(PATHS.EDIT_TRIAL_DETAILS, "POST", data, {}, {
+    accept: 'application/json',
+    ContentType: 'application/json'
+  }, (res: any) => {
+    cb(res);
+  })
 }
 
 

@@ -159,7 +159,7 @@ export function DefaultDashboard({ propData, loading }) {
                 <Activity className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                 <span className="font-medium text-white/80 text-sm">Enrollment Rate</span>
               </div>
-              <div className="font-bold text-3xl">{data?.enrollment_rate}</div>
+              <div className="font-bold text-3xl">{data?.trials?.enrollment_rate}</div>
             </div>
           </div>
         </div>

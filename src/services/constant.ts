@@ -45,7 +45,7 @@ export const PATHS = {
     // Organizations
     ORGANIZATIONS_API: `${BASE_URL}/organizations`,
     ORGANIZATION_BY_ID_API: (id: any) => `${BASE_URL}/organizations/${id}`,
-    ORGANIZATION_DOCUMENTS_BY_ID_API: (orgId: any) => `${BASE_URL}/organizations/${orgId}/documents/`,
+    ORGANIZATION_DOCUMENTS_BY_ID_API: (orgId: any) => `${BASE_URL}/organizations/${orgId}/documents`,
     ORGANIZATION_DOCUMENT_BY_ID_API: (orgId: any, docId: any) => `${BASE_URL}/organizations/${orgId}/documents/${docId}`,
 
     // Sponsors
@@ -53,7 +53,7 @@ export const PATHS = {
     SPONSOR_BY_ID_API: (id: any) => `${BASE_URL}/sponsors/${id}`,
     SPONSOR_DOUMENTS_BY_ID_API: (spoId: any) => `${BASE_URL}/sponsors/${spoId}/documents`,
     SPONSOR_DOUMENT_BY_ID_API: (spoId: any, docId: any) => `${BASE_URL}/sponsors/${spoId}/documents/${docId}`,
-    
+
     // Sites
     SITES_API: `${BASE_URL}/sites`,
     SITE_BY_ID_API: (id: any) => `${BASE_URL}/sites/${id}`,
@@ -67,6 +67,10 @@ export const PATHS = {
     TRIALS_BY_ID_API: (id: any) => `${BASE_URL}/trials/${id}`,
     ASSIGN_SPONSOR_TO_TRIALS: (id: any) => `${BASE_URL}/trials/${id}/sponsors`,
     ASSIGN_SITE_TO_TRIALS: (id: any) => `${BASE_URL}/trials/${id}/sites`,
+
+    // trial other apis
+    FETCH_TRIAL_DETAILS: `https://api.trialiq.ai/trial_detail/fetch`,
+    EDIT_TRIAL_DETAILS: `https://api.trialiq.ai/trial_details/edit`,
 };
 
 
@@ -203,7 +207,7 @@ export const API = {
             .then((res) => cb(res.data))
             .catch((err) => {
                 console.error("ERROR:", err);
-                cb(null);
+                cb(err.response);
             });
     },
 

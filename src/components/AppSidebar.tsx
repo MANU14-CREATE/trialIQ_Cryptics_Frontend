@@ -64,7 +64,7 @@ const getSidebarItems = (role: UserRole) => {
     },
 
     {
-      key: "trials", title: "Trial", icon: Beaker, subItems: [
+      key: "trials", title: "Trials", icon: Beaker, subItems: [
         { title: "View All", url: "/trials" }
       ]
     },

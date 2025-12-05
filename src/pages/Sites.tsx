@@ -105,6 +105,7 @@ export default function Sites() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sites"] });
       toast({ title: "Site deleted successfully" });
+      setHadChanged(!hadChanged)
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });

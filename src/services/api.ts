@@ -1,6 +1,6 @@
 // API Service Layer - implement with your backend
 import Sponsors from '@/pages/Sponsors';
-import { CREATE_ORGANISATION_API, CREATE_ORGANISATION_DOCUMENTS_API, CREATE_ROLES_API, CREATE_SITE_API, CREATE_SPONSOR_API, CREATE_SPONSOR_DOC_API, CREATE_USERS_API, DELETE_ORGANISATION_API, DELETE_ROLES_API, DELETE_SITE_API, DELETE_SPONSOR, DELETE_USERS_API, EDIT_ROLES_API, EDIT_ROLES_PERMISSIONS_API, GET_ORGANISATION_DOCUMENTS_API, GET_ROLES_API, MODULES_API, ORGANISATION_API, PROVIDER_API, ROLES_API, SITES_API, SPONSOR_DOC_API, SPONSORS_API, TRIALS_API, UPDATE_ORGANISATION_API, UPDATE_ORGANISATION_DOCUMENT_API, UPDATE_SITE_API, UPDATE_SPONSOR_API, UPDATE_USERS_API, USERS_API } from './apiCalls';
+import { ASSIGN_SITE_TO_TRIAL_API, ASSIGN_SPONSOR_TO_TRIAL_API, CREATE_ORGANISATION_API, CREATE_ORGANISATION_DOCUMENTS_API, CREATE_PROVIDER_API, CREATE_ROLES_API, CREATE_SITE_API, CREATE_SPONSOR_API, CREATE_SPONSOR_DOC_API, CREATE_TRIAL_API, CREATE_USERS_API, DELETE_ORGANISATION_API, DELETE_ORGANISATION_DOC_API, DELETE_PROVIDER_API, DELETE_ROLES_API, DELETE_SITE_API, DELETE_SPONSOR, DELETE_SPONSOR_SINGLE_DOC_API, DELETE_TRIAL_API, DELETE_USERS_API, EDIT_ROLES_API, EDIT_ROLES_PERMISSIONS_API, EDIT_TRIAL_DETAILS_API, FETCH_TRIAL_DETAILS_API, GET_ORGANISATION_DOCUMENTS_API, GET_ROLES_API, MODULES_API, ORGANISATION_API, PROVIDER_API, ROLES_API, SITES_API, SPONSOR_DOC_API, SPONSORS_API, TRIALS_API, UPDATE_ORGANISATION_API, UPDATE_ORGANISATION_DOCUMENT_API, UPDATE_PROVIDER_API, UPDATE_SITE_API, UPDATE_SPONSOR_API, UPDATE_TRIAL_API, UPDATE_USERS_API, USERS_API } from './apiCalls';
 import {
   mockOrganizations,
   mockSponsors,
@@ -186,8 +186,8 @@ class ApiService {
   async getOrganizationDocs(orgId: string) {
     return new Promise((resolve, reject) => {
       GET_ORGANISATION_DOCUMENTS_API(orgId, (res: any) => {
-        if (res && res.data) {
-          resolve(res.data);
+        if (res) {
+          resolve(res);
         } else {
           resolve([]);
         }
@@ -209,6 +209,18 @@ class ApiService {
   async updateOrganizationDocs(orgId: string, data: any) {
     return new Promise((resolve, reject) => {
       UPDATE_ORGANISATION_DOCUMENT_API(orgId, data, (res: any) => {
+        if (res && res.data) {
+          resolve(res.data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  }
+
+  async deleteOrganizationDoc(orgId: string, docId: string) {
+    return new Promise((resolve, reject) => {
+      DELETE_ORGANISATION_DOC_API(orgId, docId, (res: any) => {
         if (res && res.data) {
           resolve(res.data);
         } else {
@@ -247,7 +259,7 @@ class ApiService {
         if (res && res.data) {
           resolve(res.data);
         } else {
-          resolve([]);
+          resolve(res);
         }
       });
     });
@@ -278,8 +290,8 @@ class ApiService {
   async getSponsorDocs(orgId: string) {
     return new Promise((resolve, reject) => {
       SPONSOR_DOC_API(orgId, (res: any) => {
-        if (res && res.data) {
-          resolve(res.data);
+        if (res) {
+          resolve(res);
         } else {
           resolve([]);
         }
@@ -289,6 +301,18 @@ class ApiService {
   async deleteSponsor(id: string) {
     return new Promise((resolve, reject) => {
       DELETE_SPONSOR(id, (res: any) => {
+        if (res && res.data) {
+          resolve(res.data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  }
+
+  async deleteSponsorDoc(orgId: string, docId: string) {
+    return new Promise((resolve, reject) => {
+      DELETE_SPONSOR_SINGLE_DOC_API(orgId, docId, (res: any) => {
         if (res && res.data) {
           resolve(res.data);
         } else {
@@ -379,11 +403,11 @@ class ApiService {
   //   return this.request<typeof mockTrials>('/trials');
   // }
 
-  async getTrials(): Promise<{ trials: any[] }> {
+  async getTrials(): Promise<{ trials: [] }> {
     return new Promise((resolve) => {
       TRIALS_API((res: any) => {
         if (res?.data) {
-          resolve(res.data as { trials: any[] });
+          resolve(res.data as { trials: [] });
         } else {
           resolve({ trials: [] });
         }
@@ -391,21 +415,101 @@ class ApiService {
     });
   }
 
-
   async createTrial(data: any) {
-    console.log('Create trial:', data);
-    return { id: Date.now().toString(), ...data };
+    return new Promise((resolve, reject) => {
+      CREATE_TRIAL_API(data, (res: any) => {
+        if (res && res.data) {
+          resolve(res.data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  }
+  async fetchTrial(data: any) {
+    return new Promise((resolve, reject) => {
+      FETCH_TRIAL_DETAILS_API(data, (res: any) => {
+        if (res) {
+          resolve(res);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  }
+  async editTrial(data: any) {
+    return new Promise((resolve, reject) => {
+      EDIT_TRIAL_DETAILS_API(data, (res: any) => {
+        if (res) {
+          resolve(res);
+        } else {
+          resolve([]);
+        }
+      });
+    });
   }
 
   async updateTrial(id: string, data: any) {
-    console.log('Update trial:', id, data);
-    return { id, ...data };
+    return new Promise((resolve, reject) => {
+      UPDATE_TRIAL_API(id, data, (res: any) => {
+        if (res && res.data) {
+          resolve(res.data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  }
+  async deleteTrial(id: string) {
+    return new Promise((resolve, reject) => {
+      DELETE_TRIAL_API(id, (res: any) => {
+        if (res && res.data) {
+          resolve(res.data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
   }
 
-  async deleteTrial(id: string) {
-    console.log('Delete trial:', id);
-    return { success: true };
+  async assignSponsorToTrial(id: string, data: any) {
+    return new Promise((resolve, reject) => {
+      ASSIGN_SPONSOR_TO_TRIAL_API(id, data, (res: any) => {
+        if (res) {
+          resolve(res);
+        } else {
+          resolve(res.data);
+        }
+      });
+    });
   }
+   async assignSiteToTrial(id: string, data: any) {
+    return new Promise((resolve, reject) => {
+      ASSIGN_SITE_TO_TRIAL_API(id, data, (res: any) => {
+        if (res) {
+          resolve(res);
+        } else {
+          resolve(res.data);
+        }
+      });
+    });
+  }
+
+
+  // async createTrial(data: any) {
+  //   console.log('Create trial:', data);
+  //   return { id: Date.now().toString(), ...data };
+  // }
+
+  // async updateTrial(id: string, data: any) {
+  //   console.log('Update trial:', id, data);
+  //   return { id, ...data };
+  // }
+
+  // async deleteTrial(id: string) {
+  //   console.log('Delete trial:', id);
+  //   return { success: true };
+  // }
 
   // Providers
   // async getProviders() {
@@ -423,20 +527,54 @@ class ApiService {
     });
   }
 
+  // async createProvider(data: any) {
+  //   console.log('Create provider:', data);
+  //   return { id: Date.now().toString(), ...data };
+  // }
   async createProvider(data: any) {
-    console.log('Create provider:', data);
-    return { id: Date.now().toString(), ...data };
+    return new Promise((resolve, reject) => {
+      CREATE_PROVIDER_API(data, (res: any) => {
+        if (res && res.data) {
+          resolve(res.data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
   }
-
   async updateProvider(id: string, data: any) {
-    console.log('Update provider:', id, data);
-    return { id, ...data };
+    return new Promise((resolve, reject) => {
+      UPDATE_PROVIDER_API(id, data, (res: any) => {
+        if (res && res.data) {
+          resolve(res.data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
   }
 
   async deleteProvider(id: string) {
-    console.log('Delete provider:', id);
-    return { success: true };
+    return new Promise((resolve, reject) => {
+      DELETE_PROVIDER_API(id, (res: any) => {
+        if (res && res.data) {
+          resolve(res.data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
   }
+
+  // async updateProvider(id: string, data: any) {
+  //   console.log('Update provider:', id, data);
+  //   return { id, ...data };
+  // }
+
+  // async deleteProvider(id: string) {
+  //   console.log('Delete provider:', id);
+  //   return { success: true };
+  // }
 
   // Patients
   async getPatients() {

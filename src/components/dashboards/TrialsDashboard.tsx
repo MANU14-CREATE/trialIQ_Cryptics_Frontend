@@ -38,7 +38,7 @@ export function TrialsDashboard({ propData }) {
   const patientStatusData = [
     { status: "Contacted", count: data?.patient_status_overview?.contacted_patients ?? 842, icon: Activity, color: "text-primary" },
     { status: "Identified", count: data?.patient_status_overview?.identified_patients ?? 456, icon: Clock, color: "text-warning" },
-    { status: "Screened", count: data?.patient_status_overview?.screened_patients ?? 324, icon: Users, color: "text-secondary" },
+    { status: "Screened", count: data?.patient_status_overview?.screened_patients ?? 324, icon: Users, color: "text-primary" },
     { status: "Enrolled", count: data?.patient_status_overview?.enrolled_patients ?? 178, icon: CheckCircle2, color: "text-success" },
     // { status: "Remaining", count: data?.patient_status_overview ?? 664, icon: Activity, color: "text-muted-foreground" },
   ];
@@ -125,7 +125,7 @@ export function TrialsDashboard({ propData }) {
                     <item.icon className={`h-4 w-4 ${item.color}`} />
                     <span className="font-medium text-sm">{item.status}</span>
                   </div>
-                  <Badge variant="secondary" className="font-semibold text-base">
+                  <Badge variant="default" className="font-semibold text-base">
                     {item.count}
                   </Badge>
                 </div>
