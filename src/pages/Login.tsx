@@ -242,19 +242,19 @@ export default function Login() {
 
           <Card className="bg-card shadow-lg border border-border">
             <CardHeader className="space-y-1 pb-4">
-              <CardTitle className="font-semibold text-foreground text-2xl">Welcome back</CardTitle>
+              <CardTitle className="font-semibold text-foreground text-2xl">Welcome back to Trial IQ</CardTitle>
               <CardDescription className="text-muted-foreground">Enter your credentials to access your account</CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="login" className="w-full">
-                <TabsList className="grid grid-cols-2 bg-muted/50 mb-6 w-full">
+                {/* <TabsList className="grid grid-cols-2 bg-muted/50 mb-6 w-full">
                   <TabsTrigger value="login" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     Sign In
                   </TabsTrigger>
                   <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     Sign Up
                   </TabsTrigger>
-                </TabsList>
+                </TabsList> */}
                 
                 <TabsContent value="login" className="space-y-4">
                   <form onSubmit={handleLogin} className="space-y-4">
@@ -291,11 +291,11 @@ export default function Login() {
                     </Button>
                     
                     <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
-                      <DialogTrigger asChild>
+                      {/* <DialogTrigger asChild>
                         <Button variant="link" className="w-full text-muted-foreground hover:text-primary text-sm">
                           Forgot password?
                         </Button>
-                      </DialogTrigger>
+                      </DialogTrigger> */}
                       <DialogContent className="bg-card">
                         <DialogHeader>
                           <DialogTitle>Reset Password</DialogTitle>
