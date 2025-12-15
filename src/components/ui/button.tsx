@@ -5,15 +5,15 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 shadow-sm hover:shadow-md active:scale-95",
+  "inline-flex justify-center items-center gap-2 disabled:opacity-50 shadow-sm hover:shadow-md rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ring-offset-background focus-visible:ring-offset-2 [&_svg]:size-4 font-medium text-sm whitespace-nowrap active:scale-95 transition-all duration-300 [&_svg]:pointer-events-none disabled:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-gradient-primary text-primary-foreground hover:shadow-glow hover:scale-105",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:scale-105",
-        outline: "border-2 border-primary/30 bg-background hover:bg-primary/10 hover:border-primary hover:scale-105",
-        secondary: "bg-gradient-secondary text-white hover:shadow-glow hover:scale-105",
-        ghost: "hover:bg-accent hover:text-accent-foreground hover:scale-105",
+        default: "bg-primary text-primary-foreground shadow-sm hover:bg-primary-dark",
+        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        outline: "border border-input bg-background hover:bg-muted hover:text-foreground",
+        secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+        ghost: "hover:bg-muted hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -32,7 +32,7 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
 

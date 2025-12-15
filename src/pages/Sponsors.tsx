@@ -48,6 +48,8 @@ interface Sponsor {
     email: string;
     phone: string;
   };
+  sites: [],
+  sponsors: []
 }
 
 export default function Sponsors() {
@@ -230,6 +232,52 @@ export default function Sponsors() {
   };
 
 
+  const [selectedSites, setSelectedSites] = useState<number[]>([]);
+
+  const handleCheckboxChange2 = (siteId: number) => {
+    setSelectedSites((prev) =>
+      prev.includes(siteId)
+        ? prev.filter((id) => id !== siteId)   // remove
+        : [...prev, siteId]                    // add
+    );
+  };
+  useEffect(() => {
+    if (!assigningSites?.sites) return;
+    const ids = assigningSites.sites.map((s: any) => s.id);
+    setSelectedSites(ids);
+  }, [assigningSites]);
+
+  const [addSiteLoading, setAddSiteLoading] = useState<boolean>(false);
+  const handleAssignSites = () => {
+    if (!selectedSites) {
+      alert("Please select a site");
+      return;
+    }
+    const payload = {
+      "site_ids": selectedSites
+    };
+    const callApi = async () => {
+      let result: any;
+      try {
+        setAddSiteLoading(true)
+        result = await apiService.assignSiteToSponsor(assigningSites.id, payload)
+        if (!result) return;
+        toast({
+          title: result?.success ? "Site assigned to sponsor successfully" : result?.data?.error?.message,
+          variant: result?.success ? "default" : "destructive"
+        });
+      } catch (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } finally {
+        setAddSiteLoading(false)
+        // Reset after submission
+        setSelectedSites([]);
+        setHadChanged(!hadChanged)
+        setAssigningSites(null)
+      }
+    }
+    callApi()
+  };
 
   if (userLoading) {
     return (
@@ -525,15 +573,31 @@ export default function Sponsors() {
             </DialogHeader>
             <div className="space-y-4">
               {sitesList?.map((site: any) => (
-                <div key={site.id} className="flex justify-between items-center p-3 border rounded">
+                <div
+                  key={site.id}
+                  className="flex justify-between items-center p-3 border rounded"
+                >
                   <div>
                     <p className="font-medium">{site.user.name}</p>
-                    <p className="text-muted-foreground text-sm">{site.address || "No location"}</p>
+                    <p className="text-muted-foreground text-sm">
+                      {site.address || "No location"}
+                    </p>
                   </div>
-                  <Checkbox />
+
+                  <Checkbox
+                    checked={selectedSites.includes(site.id)}
+                    onCheckedChange={() => handleCheckboxChange2(site.id)}
+                  />
                 </div>
               ))}
-              <Button className="w-full">Assign Practices</Button>
+
+              <Button
+                className="w-full"
+                onClick={handleAssignSites}
+                disabled={addSiteLoading}
+              >
+                {addSiteLoading ? "Saving..." : "Assign"}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

@@ -128,13 +128,10 @@ export default function Login() {
         setLoading(false);
         return;
       }
-
       const { user, error } = await authService.signIn(email, password);
-
       if (error || !user) {
         throw new Error(error || "Invalid email or password. Please check your credentials and try again.");
       }
-
       toast({
         title: "Welcome back!",
         description: "You have successfully signed in.",
@@ -179,167 +176,224 @@ export default function Login() {
   };
 
   return (
-    <div className="flex justify-center items-center bg-gradient-to-br from-background via-background to-primary/5 p-6 min-h-screen">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8">
-          <div className="flex justify-center items-center bg-gradient-to-br from-primary to-secondary shadow-lg mb-4 rounded-2xl w-16 h-16">
-            <Beaker className="w-8 h-8 text-primary-foreground" />
+    <div className="relative flex bg-background min-h-screen overflow-hidden">
+      {/* Subtle Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="top-0 right-0 absolute bg-primary/5 blur-3xl rounded-full w-[600px] h-[600px]" />
+        <div className="bottom-0 left-0 absolute bg-accent/5 blur-3xl rounded-full w-[500px] h-[500px]" />
+      </div>
+
+      {/* Left Side - Branding */}
+      <div className="hidden relative lg:flex flex-col justify-between bg-gradient-to-br from-primary to-primary-dark p-12 lg:w-1/2 overflow-hidden">
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
+        </div>
+        
+        <div className="z-10 relative animate-fade-in">
+          <div className="flex items-center gap-3 mb-12">
+            <div className="flex justify-center items-center bg-white/20 backdrop-blur-sm rounded-xl w-12 h-12">
+              <Beaker className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="font-bold text-white text-2xl">Trial IQ</h1>
+              <p className="text-white/70 text-sm">Clinical Trial Management</p>
+            </div>
           </div>
-          <h1 className="bg-clip-text bg-gradient-to-r from-primary to-secondary font-bold text-transparent text-3xl">
-            Trial IQ
-          </h1>
-          <p className="mt-2 text-muted-foreground">Clinical Trial Management System</p>
+          <div className="space-y-6">
+            <h2 className="font-bold text-white text-4xl leading-tight">
+              Streamline Your<br />Clinical Research<br />Workflow
+            </h2>
+            <p className="max-w-md text-white/80 text-lg leading-relaxed">
+              Manage trials, track patient enrollment, and collaborate with sites — all in one powerful platform.
+            </p>
+          </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Authentication</CardTitle>
-            <CardDescription>Sign in or create a new account</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              {/* <TabsList className="grid grid-cols-2 w-full">
-                <TabsTrigger value="login" style={{ width: "200%" }}>Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList> */}
+        {/* Stats Cards */}
+        <div className="z-10 relative gap-4 grid grid-cols-3">
+          {[
+            { label: 'Active Patients', value: '10K+' },
+            { label: 'Clinical Trials', value: '500+' },
+            { label: 'Research Sites', value: '200+' },
+          ].map((stat, idx) => (
+            <div 
+              key={idx}
+              className="bg-white/10 hover:bg-white/15 backdrop-blur-sm p-4 border border-white/10 rounded-xl transition-colors duration-300"
+            >
+              <div className="font-bold text-white text-2xl">{stat.value}</div>
+              <div className="text-white/60 text-sm">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-              <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="w-4 h-4" />
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="name@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Signing in..." : "Sign In"}
-                  </Button>
+      {/* Right Side - Auth Forms */}
+      <div className="relative flex flex-1 justify-center items-center p-6 lg:p-12">
+        <div className="w-full max-w-md animate-fade-in">
+          {/* Mobile Logo */}
+          <div className="lg:hidden flex flex-col items-center mb-8">
+            <div className="flex justify-center items-center bg-primary mb-3 rounded-xl w-14 h-14">
+              <Beaker className="w-7 h-7 text-white" />
+            </div>
+            <h1 className="font-bold text-foreground text-2xl">Trial IQ</h1>
+            <p className="text-muted-foreground text-sm">Clinical Trial Management</p>
+          </div>
 
-                  <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="link" className="w-full text-muted-foreground hover:text-primary text-sm">
-                        Forgot password?
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-background">
-                      <DialogHeader>
-                        <DialogTitle>Reset Password</DialogTitle>
-                        <DialogDescription>
-                          Enter your email address and we'll send you a link to reset your password.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <form onSubmit={handlePasswordReset} className="space-y-4 mt-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="reset-email">Email</Label>
-                          <Input
-                            id="reset-email"
-                            type="email"
-                            placeholder="name@example.com"
-                            value={resetEmail}
-                            onChange={(e) => setResetEmail(e.target.value)}
-                            required
-                          />
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => setIsResetDialogOpen(false)}
-                          >
-                            Cancel
-                          </Button>
-                          <Button type="submit" className="flex-1" disabled={resetLoading}>
-                            {resetLoading ? "Sending..." : "Send Reset Link"}
-                          </Button>
-                        </div>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="w-4 h-4" />
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="name@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                    />
-                    <p className="text-muted-foreground text-xs">
-                      Password must be at least 8 characters and contain uppercase, lowercase, number, and special character
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Select Your Role</Label>
-                    <Select value={selectedRole} onValueChange={setSelectedRole}>
-                      <SelectTrigger id="role" className="bg-background">
-                        <SelectValue placeholder="Choose your role" />
-                      </SelectTrigger>
-                      <SelectContent className="z-50 bg-popover">
-                        <SelectItem value="super-admin">Super Admin (Full System Access)</SelectItem>
-                        <SelectItem value="multi-site-management">Multi-Site Manager</SelectItem>
-                        <SelectItem value="sponsor">Sponsor (Pharmaceutical Company)</SelectItem>
-                        <SelectItem value="site">Site Admin (Clinical Site)</SelectItem>
-                        <SelectItem value="provider">Healthcare Provider</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-muted-foreground text-xs">
-                      Choose the role that best describes your position
-                    </p>
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Creating account..." : "Sign Up"}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+          <Card className="bg-card shadow-lg border border-border">
+            <CardHeader className="space-y-1 pb-4">
+              <CardTitle className="font-semibold text-foreground text-2xl">Welcome back</CardTitle>
+              <CardDescription className="text-muted-foreground">Enter your credentials to access your account</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="login" className="w-full">
+                <TabsList className="grid grid-cols-2 bg-muted/50 mb-6 w-full">
+                  <TabsTrigger value="login" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    Sign In
+                  </TabsTrigger>
+                  <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    Sign Up
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="login" className="space-y-4">
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    {error && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="w-4 h-4" />
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    )}
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email">Email</Label>
+                      <Input
+                        id="login-email"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password">Password</Label>
+                      <Input
+                        id="login-password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={6}
+                      />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? "Signing in..." : "Sign In"}
+                    </Button>
+                    
+                    <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="link" className="w-full text-muted-foreground hover:text-primary text-sm">
+                          Forgot password?
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-card">
+                        <DialogHeader>
+                          <DialogTitle>Reset Password</DialogTitle>
+                          <DialogDescription>
+                            Enter your email address and we'll send you a link to reset your password.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handlePasswordReset} className="space-y-4 mt-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="reset-email">Email</Label>
+                            <Input
+                              id="reset-email"
+                              type="email"
+                              placeholder="name@example.com"
+                              value={resetEmail}
+                              onChange={(e) => setResetEmail(e.target.value)}
+                              required
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              className="flex-1"
+                              onClick={() => setIsResetDialogOpen(false)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button type="submit" className="flex-1" disabled={resetLoading}>
+                              {resetLoading ? "Sending..." : "Send Reset Link"}
+                            </Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </form>
+                </TabsContent>
+                
+                <TabsContent value="signup" className="space-y-4">
+                  <form onSubmit={handleSignUp} className="space-y-4">
+                    {error && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="w-4 h-4" />
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    )}
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Password</Label>
+                      <Input
+                        id="signup-password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={6}
+                      />
+                      <p className="text-muted-foreground text-xs">
+                        Password must be at least 8 characters and contain uppercase, lowercase, number, and special character
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="role">Select Your Role</Label>
+                      <Select value={selectedRole} onValueChange={setSelectedRole}>
+                        <SelectTrigger id="role" className="bg-background">
+                          <SelectValue placeholder="Choose your role" />
+                        </SelectTrigger>
+                        <SelectContent className="z-50 bg-popover">
+                          <SelectItem value="super-admin">Super Admin (Full System Access)</SelectItem>
+                          <SelectItem value="multi-site-management">Multi-Site Manager</SelectItem>
+                          <SelectItem value="sponsor">Sponsor (Pharmaceutical Company)</SelectItem>
+                          <SelectItem value="site">Site Admin (Clinical Site)</SelectItem>
+                          <SelectItem value="provider">Healthcare Provider</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-muted-foreground text-xs">
+                        Choose the role that best describes your position
+                      </p>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? "Creating account..." : "Sign Up"}
+                    </Button>
+                  </form>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

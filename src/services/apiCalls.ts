@@ -68,7 +68,7 @@ export function UPDATE_USERS_API(id: any, data: any, cb: any) {
   });
 }
 export function DELETE_USERS_API(id: any, cb: any) {
-  API.DELETE(PATHS.USER_BY_ID_API(id), {}, (res: any) => {
+  API.DELETE(PATHS.USER_BY_ID_API(id), {}, {}, (res: any) => {
     cb(res);
   });
 }
@@ -100,7 +100,7 @@ export function GET_ROLES_API(data: any, cb: any) {
   });
 }
 export function DELETE_ROLES_API(data: any, cb: any) {
-  API.DELETE(PATHS.ROLE_BY_ID_API(data), {}, (res: any) => {
+  API.DELETE(PATHS.ROLE_BY_ID_API(data), {}, {}, (res: any) => {
     cb(res);
   });
 }
@@ -130,7 +130,7 @@ export function UPDATE_ORGANISATION_API(id: any, data: any, cb: any) {
   });
 }
 export function DELETE_ORGANISATION_API(id: any, cb: any) {
-  API.DELETE(PATHS.ORGANIZATION_BY_ID_API(id), {}, (res: any) => {
+  API.DELETE(PATHS.ORGANIZATION_BY_ID_API(id), {}, {}, (res: any) => {
     cb(res);
   });
 }
@@ -157,13 +157,13 @@ export function UPDATE_ORGANISATION_DOCUMENT_API(orgId: any, data: any, cb: any)
   });
 } // update single document
 export function DELETE_ORGANISATION_DOC_API(orgId: any, docId: any, cb: any) {
-  API.DELETE(PATHS.ORGANIZATION_DOCUMENT_BY_ID_API(orgId, docId), {}, (res: any) => {
+  API.DELETE(PATHS.ORGANIZATION_DOCUMENT_BY_ID_API(orgId, docId), {}, {}, (res: any) => {
     cb(res);
   });
 } // detete single document
 
 export function DELETE_ORGANISATION_DOCUMENT_API(id: any, docId: any, cb: any) {
-  API.DELETE(PATHS.ORGANIZATION_DOCUMENT_BY_ID_API(id, docId), {}, (res: any) => {
+  API.DELETE(PATHS.ORGANIZATION_DOCUMENT_BY_ID_API(id, docId), {}, {}, (res: any) => {
     cb(res);
   });
 } //. delete single document
@@ -193,7 +193,7 @@ export function UPDATE_TRIAL_API(id: any, data: any, cb: any) {
 }
 
 export function DELETE_TRIAL_API(id: any, cb: any) {
-  API.DELETE(PATHS.TRIALS_BY_ID_API(id), {}, (res: any) => {
+  API.DELETE(PATHS.TRIALS_BY_ID_API(id), {}, {}, (res: any) => {
     cb(res);
   });
 }
@@ -203,9 +203,14 @@ export function ASSIGN_SPONSOR_TO_TRIAL_API(id: any, data: any, cb: any) {
     cb(res);
   });
 }
+export function DELETE_SPONSOR_TO_TRIAL_API(id: any, data: any, cb: any) {
+  API.DELETE(PATHS.ASSIGN_SPONSOR_TO_TRIALS(id), data, {}, (res: any) => {
+    cb(res);
+  });
+}
 
 export function ASSIGN_SITE_TO_TRIAL_API(id: any, data: any, cb: any) {
-  API.POST(PATHS.ASSIGN_SITE_TO_TRIALS(id), data, {}, (res: any) => {
+  API.PUT(PATHS.ASSIGN_SITE_TO_TRIALS(id), data, {}, (res: any) => {
     cb(res);
   });
 }
@@ -233,7 +238,7 @@ export function UPDATE_SPONSOR_API(spoId: any, data: any, cb: any) {
   });
 }
 export function DELETE_SPONSOR(spoId: any, cb: any) {
-  API.DELETE(PATHS.SPONSOR_BY_ID_API(spoId), {}, (res: any) => {
+  API.DELETE(PATHS.SPONSOR_BY_ID_API(spoId), {}, {}, (res: any) => {
     cb(res);
   });
 }
@@ -263,11 +268,16 @@ export function UPDATE_SPONSOR_SINGLE_DOC_API(spoId: any, docId: any, data: any,
 }
 
 export function DELETE_SPONSOR_SINGLE_DOC_API(spoId: any, docId: any, cb: any) {
-  API.DELETE(PATHS.SPONSOR_DOUMENT_BY_ID_API(spoId, docId), {}, (res: any) => {
+  API.DELETE(PATHS.SPONSOR_DOUMENT_BY_ID_API(spoId, docId), {}, {}, (res: any) => {
     cb(res);
   });
 }
 
+export function ASSIGN_SITE_TO_SPONSOR_API(id: any, data: any, cb: any) {
+  API.PUT(PATHS.ASSIGN_SITE_TO_SPONSOR(id), data, {}, (res: any) => {
+    cb(res);
+  });
+}
 
 // sites 
 
@@ -284,7 +294,7 @@ export function UPDATE_SITE_API(id: any, data: any, cb: any) {
 }
 
 export function DELETE_SITE_API(id: any, cb: any) {
-  API.DELETE(PATHS.SITE_BY_ID_API(id), {}, (res: any) => {
+  API.DELETE(PATHS.SITE_BY_ID_API(id), {}, {}, (res: any) => {
     cb(res);
   });
 }
@@ -304,7 +314,7 @@ export function UPDATE_PROVIDER_API(id: any, data: any, cb: any) {
 }
 
 export function DELETE_PROVIDER_API(id: any, cb: any) {
-  API.DELETE(PATHS.PROVIDER_BY_ID_API(id), {}, (res: any) => {
+  API.DELETE(PATHS.PROVIDER_BY_ID_API(id), {}, {}, (res: any) => {
     cb(res);
   });
 }

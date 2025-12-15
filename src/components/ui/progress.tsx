@@ -1,24 +1,47 @@
 import * as React from "react";
 import * as ProgressPrimitive from "@radix-ui/react-progress";
+import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+const progressVariants = cva(
+  "relative flex-1 w-full h-full overflow-hidden transition-all duration-500 ease-out",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary",
+        primary: "bg-primary",
+        secondary: "bg-secondary-foreground",
+        success: "bg-success",
+        warning: "bg-warning",
+        info: "bg-info",
+        destructive: "bg-destructive",
+        accent: "bg-accent-foreground",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+);
+
+interface ProgressProps
+  extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>,
+  VariantProps<typeof progressVariants> { }
+
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
->(({ className, value, ...props }, ref) => (
+  ProgressProps
+>(({ className, value, variant, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
-    className={cn("relative h-3 w-full overflow-hidden rounded-full bg-secondary/50 shadow-inner", className)}
+    className={cn("relative bg-muted shadow-inner rounded-full w-full h-3 overflow-hidden", className)}
     {...props}
   >
     <ProgressPrimitive.Indicator
-      className="h-full w-full flex-1 bg-gradient-primary transition-all duration-500 ease-out relative overflow-hidden"
+      className={cn(progressVariants({ variant }))}
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
-    >
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" 
-           style={{ backgroundSize: "200% 100%" }} />
-    </ProgressPrimitive.Indicator>
+    />
   </ProgressPrimitive.Root>
 ));
 Progress.displayName = ProgressPrimitive.Root.displayName;

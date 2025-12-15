@@ -6,6 +6,7 @@ export interface User {
   id: string;
   email: string;
   role: 'super-admin' | 'multi-site-management' | 'sponsor' | 'site' | 'provider';
+  all: TransformedUser;
 }
 
 export interface AuthResponse {
@@ -134,7 +135,8 @@ class AuthService {
     const user: User = {
       id: `user_${Date.now()}`,
       email,
-      role: role as User['role']
+      role: role as User['role'],
+      all: null
     };
 
     this.currentUser = user;
@@ -169,30 +171,27 @@ class AuthService {
   async signIn(email: string, password: string): Promise<AuthResponse> {
     return new Promise((resolve) => {
       const payload = { email, password };
-
       LOGIN_USER_API(payload, (res: any) => {
         if (res?.success) {
-          // Extract user from API response
-          // const user = res.data.user; // Adjust if backend format differs
           const user: User = {
             id: res.data.user?.id,
             email: res.data.user?.email,
-            role: res.data.user?.role.name.replace(/_/g, '-') // Default role for demo
+            role: res.data.user?.role.name.replace(/_/g, '-'),// Default role for demo
+            all: transformUserRoleObject(res.data.user)
           };
           const newObject = transformUserRoleObject(res.data.user);
-          console.log(newObject)
           // Save session
           this.currentUser = user;
-
-          localStorage.setItem('auth_user_2', JSON.stringify(newObject));
+          // localStorage.setItem('auth_user_2', JSON.stringify(newObject));
           localStorage.setItem('auth_user', JSON.stringify(user));
           localStorage.setItem('access_token', JSON.stringify(res?.data?.accessToken));
           this.notifyListeners();
           resolve({ user, error: null });
         } else {
+          const { error } = res?.response?.data
           resolve({
             user: null,
-            error: res?.message || "Invalid credentials"
+            error: error?.message || "Invalid credentials"
           });
         }
       });

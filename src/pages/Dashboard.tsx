@@ -41,6 +41,7 @@ export default function Dashboard() {
         const user = await authService.getUser();
 
         if (!user) return;
+        console.log("----", user)
 
         setUserName(user.email);
         setUserRole(user.role as UserRole);
@@ -189,9 +190,9 @@ export default function Dashboard() {
             </div>
           </header>
           <main className="flex-1 p-6">
-            {userRole === "super-admin" ? (
+            {userRole ? (
               <>
-                <div className="mb-6">
+                {/* <div className="mb-6">
                   <h2 className="bg-clip-text bg-gradient-primary mb-6 font-bold text-transparent text-2xl">Select Dashboard Module</h2>
                   <div className="gap-6 grid md:grid-cols-2 lg:grid-cols-5">
                     {dashboardModules.map((module) => {
@@ -223,6 +224,27 @@ export default function Dashboard() {
                             </div>
                           </CardContent>
                         </Card>
+                      );
+                    })}
+                  </div>
+                </div> */}
+                <div className="mb-6">
+                  <h2 className="mb-4 font-semibold text-foreground text-lg">Select Dashboard Module</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {dashboardModules.map((module) => {
+                      const Icon = module.icon;
+                      const isSelected = selectedModule === module.id;
+                      return (
+                        <Button
+                          key={module.id}
+                          variant={isSelected ? "default" : "outline"}
+                          size="sm"
+                          className={`gap-2 ${isSelected ? "" : "text-muted-foreground"}`}
+                          onClick={() => setSelectedModule(module.id)}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {module.label}
+                        </Button>
                       );
                     })}
                   </div>

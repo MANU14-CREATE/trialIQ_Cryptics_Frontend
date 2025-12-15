@@ -51,6 +51,8 @@ interface Trial {
   start_date: string | null;
   end_date: string | null;
   created_at: string;
+  sponsors: [],
+  sites: []
 }
 function TrialEditor({ initialData, onSave }) {
   const [formData, setFormData] = useState(initialData);
@@ -938,7 +940,6 @@ export default function Trials() {
       "can_edit": canEdit
     };
 
-    // console.log("Assigned Sponsor:", assigningSponsors.id, payload);
 
     const callApi = async () => {
       let result: any;
@@ -946,7 +947,6 @@ export default function Trials() {
         setAddSponsorLoading(true)
         result = await apiService.assignSponsorToTrial(assigningSponsors.id, payload)
         if (!result) return;
-        console.log(result)
         toast({
           title: result?.success ? "Sponsor assigned to trial successfully" : result?.data?.error?.message,
           variant: result?.success ? "default" : "destructive"
@@ -958,27 +958,38 @@ export default function Trials() {
         // Reset after submission
         setSelectedSponsor(null);
         setCanEdit(false);
+        setHadChanged(!hadChanged)
+        setAssigningSponsors(null)
       }
     }
     callApi()
   };
 
-  const [selectedSite, setSelectedSite] = useState<number | null>(null);
+  const [selectedSites, setSelectedSites] = useState<number[]>([]);
   const [addSiteLoading, setAddSiteLoading] = useState<boolean>(false);
 
   // Single select handler
   const handleCheckboxChange = (siteId: number) => {
-    setSelectedSite((prev) => (prev === siteId ? null : siteId));
+    setSelectedSites((prev) =>
+      prev.includes(siteId)
+        ? prev.filter((id) => id !== siteId) // remove if already selected
+        : [...prev, siteId] // add new
+    );
   };
+  useEffect(() => {
+    if (!assigningSites?.sites) return;
+    const ids = assigningSites.sites.map((s: any) => s.id);
+    setSelectedSites(ids);
+  }, [assigningSites]);
 
   // Submit handler
   const handleAssignSites = () => {
-    if (!selectedSite) {
+    if (!selectedSites) {
       alert("Please select a site");
       return;
     }
     const payload = {
-      "site_id": selectedSite
+      "site_ids": selectedSites
     };
     const callApi = async () => {
       let result: any;
@@ -986,7 +997,6 @@ export default function Trials() {
         setAddSiteLoading(true)
         result = await apiService.assignSiteToTrial(assigningSites.id, payload)
         if (!result) return;
-        console.log(result)
         toast({
           title: result?.success ? "Site assigned to trial successfully" : result?.data?.error?.message,
           variant: result?.success ? "default" : "destructive"
@@ -996,8 +1006,10 @@ export default function Trials() {
       } finally {
         setAddSiteLoading(false)
         // Reset after submission
-        setSelectedSite(null);
+        setSelectedSites([]);
         setCanEdit(false);
+        setHadChanged(!hadChanged)
+        setAssigningSites(null)
       }
     }
     callApi()
@@ -1007,6 +1019,38 @@ export default function Trials() {
     return sortDirection === "asc" ? <ArrowUp className="ml-1 w-4 h-4" /> : <ArrowDown className="ml-1 w-4 h-4" />;
   };
 
+
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const handleDeleteSponsor = (id: any) => {
+    if (!id) {
+      alert("Please select a sponsor");
+      return;
+    }
+    const payload = {
+      "sponsor_id": id,
+    };
+
+    const callApi = async () => {
+      let result: any;
+      setDeleteLoading(true)
+      try {
+        result = await apiService.deleteSponsorToTrial(assigningSponsors.id, payload)
+        if (!result) return;
+        toast({
+          title: result?.success ? "Sponsor removed from trial" : result?.data?.error?.message,
+          variant: result?.success ? "default" : "destructive"
+        });
+      } catch (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } finally {
+        setDeleteLoading(false)
+        setCanEdit(false);
+        setHadChanged(!hadChanged)
+        setAssigningSponsors(null)
+      }
+    }
+    callApi()
+  };
 
   if (userLoading) {
     return (
@@ -1495,13 +1539,17 @@ export default function Trials() {
                   </div>
 
                   <Checkbox
-                    checked={selectedSite === site.id}
+                    checked={selectedSites.includes(site.id)}
                     onCheckedChange={() => handleCheckboxChange(site.id)}
                   />
                 </div>
               ))}
 
-              <Button className="w-full" onClick={handleAssignSites} disabled={addSiteLoading}>
+              <Button
+                className="w-full"
+                onClick={handleAssignSites}
+                disabled={addSiteLoading}
+              >
                 {addSiteLoading ? "Saving..." : "Assign"}
               </Button>
             </div>
@@ -1579,7 +1627,7 @@ export default function Trials() {
                 </div>
               </div>
 
-              {/* <div className="space-y-3">
+              <div className="space-y-3">
                 <Label>Assigned Sponsors</Label>
                 <div className="border rounded-lg overflow-hidden">
                   <Table>
@@ -1591,7 +1639,25 @@ export default function Trials() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow>
+                      {assigningSponsors?.sponsors.map((item: any) =>
+                      (
+                        <TableRow>
+                          <TableCell className="font-medium">{item?.sponsor?.user?.name}</TableCell>
+                          <TableCell>
+                            <Badge variant={item?.can_edit ? "default" : "outline"} >✓</Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant={deleteLoading ? "ghost" : "default"} size="icon"
+                              disabled={deleteLoading}
+                              onClick={() => handleDeleteSponsor(item?.sponsor_id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                      )}
+                      {/* <TableRow>
                         <TableCell className="font-medium">Manasvi malav</TableCell>
                         <TableCell>
                           <Badge variant="default">✓</Badge>
@@ -1601,11 +1667,11 @@ export default function Trials() {
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </TableCell>
-                      </TableRow>
+                      </TableRow> */}
                     </TableBody>
                   </Table>
                 </div>
-              </div> */}
+              </div>
             </div>
           </DialogContent>
         </Dialog>
@@ -1633,10 +1699,6 @@ function TrialForm(
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [triggerSubmit, setTriggerSubmit] = useState(false);
-
-  useEffect(() => {
-    console.log(trial)
-  }, [trial])
 
 
   useEffect(() => {

@@ -206,7 +206,7 @@ interface User {
 interface InputItem {
   id: string;
   user: User;
-  user_id:string;
+  user_id: string;
 }
 
 interface ExtractedRole {
@@ -233,12 +233,7 @@ function extractRoles(data: InputItem[]): ExtractedRole[] {
 }
 
 
-const ENTITY_TYPES = [
-  { value: "organizations", label: "Organization", icon: Building2, gradient: "from-blue-500 to-cyan-500" },
-  { value: "sponsors", label: "Sponsor", icon: Building, gradient: "from-purple-500 to-pink-500" },
-  { value: "sites", label: "Site", icon: Building, gradient: "from-green-500 to-emerald-500" },
-  { value: "providers", label: "Provider", icon: Stethoscope, gradient: "from-orange-500 to-red-500" },
-];
+
 
 const AVAILABLE_PERMISSIONS = [
   { value: "manage_users", label: "Manage Users" },
@@ -489,7 +484,7 @@ export function RoleManagement() {
   }, [])
 
   useEffect(() => {
-    console.log(newRoleEntityId )
+    console.log(newRoleEntityId)
     console.log(entities)
   }, [entities])
 
@@ -713,6 +708,13 @@ export function RoleManagement() {
     return rolesData.filter(role => (role.entity_type + "s") === entityType);
   };
 
+  const ENTITY_TYPES = [
+    { value: "organizations", label: "Organizations", icon: Building2, gradient: "from-blue-500 to-cyan-500" },
+    { value: "sponsors", label: "Sponsors", icon: Building, gradient: "from-purple-500 to-pink-500" },
+    { value: "sites", label: "Sites", icon: Building, gradient: "from-green-500 to-emerald-500" },
+    { value: "providers", label: "Providers", icon: Stethoscope, gradient: "from-orange-500 to-red-500" },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -861,7 +863,7 @@ export function RoleManagement() {
                   <SelectContent>
                     {entities.map(entity => (
                       <SelectItem key={entity.id} value={entity.entity_id}>
-                        {entity.name} 
+                        {entity.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

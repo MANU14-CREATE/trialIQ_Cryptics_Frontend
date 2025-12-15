@@ -53,6 +53,7 @@ export const PATHS = {
     SPONSOR_BY_ID_API: (id: any) => `${BASE_URL}/sponsors/${id}`,
     SPONSOR_DOUMENTS_BY_ID_API: (spoId: any) => `${BASE_URL}/sponsors/${spoId}/documents`,
     SPONSOR_DOUMENT_BY_ID_API: (spoId: any, docId: any) => `${BASE_URL}/sponsors/${spoId}/documents/${docId}`,
+    ASSIGN_SITE_TO_SPONSOR: (id: any) => `${BASE_URL}/sponsors/${id}/sites`,
 
     // Sites
     SITES_API: `${BASE_URL}/sites`,
@@ -237,11 +238,12 @@ export const API = {
             });
     },
 
-    DELETE(url: string, params = {}, cb: Function) {
+    DELETE(url: string, body = {}, params = {}, cb: Function) {
         axiosInstance
             .delete(url, {
                 headers: authorizeRequest(),
-                params,
+                params,      // query params
+                data: body,  // body for delete
             })
             .then((res) => cb(res.data))
             .catch((err) => {
@@ -261,7 +263,7 @@ export const API = {
             .then((res) => cb(res.data))
             .catch((err) => {
                 console.error("ERROR:", err);
-                cb(null);
+                cb(err);
             });
     },
 

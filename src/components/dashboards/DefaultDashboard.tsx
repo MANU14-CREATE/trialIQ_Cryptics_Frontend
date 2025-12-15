@@ -13,79 +13,16 @@ import {
   Activity,
   FileText,
 } from "lucide-react";
-import { DASHBOARD_API } from "@/services/apiCalls";
 import { DashboardData } from "./support";
-
-
 
 export function DefaultDashboard({ propData, loading }) {
   const [data, setData] = useState<DashboardData | null>(null);
-  // const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     setData(propData)
   }, [propData]);
 
-  // const fetchDashboardData = async () => {
-  //   try {
-  //     setLoading(true);
-  //     // Mock dashboard data for now
-  //     // const mockData: DashboardData = {
-  //     //   system_overview: {
-  //     //     active_trials: "24",
-  //     //     active_trial_growth: "+12%",
-  //     //     total_patients: "1,247",
-  //     //     total_patients_growth: "+8%",
-  //     //   },
-  //     //   patient_pipeline: {
-  //     //     identified_patients: "450",
-  //     //     identified_patients_percent: "36",
-  //     //     contacted_patients: "320",
-  //     //     contacted_patients_percent: "26",
-  //     //     screened_patients: "280",
-  //     //     screened_patients_percent: "22",
-  //     //     enrolled_patients: "197",
-  //     //     enrolled_patients_percent: "16",
-  //     //   },
-  //     //   top_performers: [
-  //     //     { site_name: "Downtown Medical Center", site_id: "1", enrolled_patients: 48, performance_change: "+15%" },
-  //     //     { site_name: "University Hospital", site_id: "2", enrolled_patients: 42, performance_change: "+12%" },
-  //     //     { site_name: "Regional Clinic", site_id: "3", enrolled_patients: 38, performance_change: "+8%" },
-  //     //     { site_name: "Metro Health Center", site_id: "4", enrolled_patients: 35, performance_change: "+10%" },
-  //     //   ],
-  //     //   matched_trials: [
-  //     //     { trial_id: "1", trial_name: "Diabetes Study", matched_patients: 45, status: "active", match_score: "94%" },
-  //     //     { trial_id: "2", trial_name: "Cardio Trial", matched_patients: 38, status: "recruiting", match_score: "89%" },
-  //     //   ],
-  //     //   total_trials: 24,
-  //     //   total_patients_pipeline: 1247,
-  //     //   enrollment_rate: "15.8%",
-  //     //   trial_performance_summary: {
-  //     //     contact_rate: "71%",
-  //     //     screen_rate: "88%",
-  //     //     enrollment_rate: "70%",
-  //     //   },
-  //     // };
-  //     DASHBOARD_API({
-  //       "auth_token": "UirmCXEy4A"
-  //     }, (res: any) => {
-  //       if (res) {
-  //         setData(res)
-  //       }
-  //     })
-  //     // setData(mockData);
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     toast({
-  //       title: "Error",
-  //       description: "Failed to load dashboard data?. Please try again.",
-  //       variant: "destructive",
-  //     });
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   if (loading) {
     return (
       <div className="space-y-8 animate-fade-in">
@@ -172,7 +109,7 @@ export function DefaultDashboard({ propData, loading }) {
           <div className="top-0 right-0 absolute bg-gradient-primary opacity-5 -mt-16 -mr-16 rounded-full w-32 h-32 group-hover:scale-150 transition-transform duration-500" />
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
-              <div className="bg-gradient-primary shadow-md p-2 rounded-lg">
+              <div className="bg-primary shadow-md p-2 rounded-lg">
                 <Users className="w-5 h-5 text-white" />
               </div>
               <span>Patient Pipeline</span>
@@ -184,23 +121,23 @@ export function DefaultDashboard({ propData, loading }) {
               <div className="group/item hover:bg-secondary/30 p-3 rounded-lg transition-all duration-200 cursor-pointer">
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-3">
-                    <div className="flex justify-center items-center bg-gradient-secondary shadow-md rounded-full w-10 h-10 font-bold text-white text-xs">
+                    <div className="flex justify-center items-center bg-info shadow-md rounded-full w-10 h-10 font-bold text-white text-xs">
                       {data?.patient_pipeline?.identified_patients}
                     </div>
                     <div>
-                      <Badge variant="secondary" className="mb-1">Identified</Badge>
+                      <Badge variant="info" className="mb-1">Identified</Badge>
                       <div className="text-muted-foreground text-xs">Pre-screening phase</div>
                     </div>
                   </div>
-                  <span className="font-bold text-primary text-lg">{data?.patient_pipeline?.identified_patients_percent}%</span>
+                  <span className="font-bold text-info text-lg">{data?.patient_pipeline?.identified_patients_percent}%</span>
                 </div>
-                <Progress value={parseInt(data?.patient_pipeline?.identified_patients_percent)} className="h-2" />
+                <Progress value={parseInt(data?.patient_pipeline?.identified_patients_percent || "0")} className="h-2" variant="info" />
               </div>
 
               <div className="group/item hover:bg-primary/5 p-3 rounded-lg transition-all duration-200 cursor-pointer">
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-3">
-                    <div className="flex justify-center items-center bg-gradient-warning shadow-md rounded-full w-10 h-10 font-bold text-white text-xs">
+                    <div className="flex justify-center items-center bg-warning shadow-md rounded-full w-10 h-10 font-bold text-white text-xs">
                       {data?.patient_pipeline?.contacted_patients}
                     </div>
                     <div>
@@ -210,13 +147,13 @@ export function DefaultDashboard({ propData, loading }) {
                   </div>
                   <span className="font-bold text-warning text-lg">{data?.patient_pipeline?.contacted_patients_percent}%</span>
                 </div>
-                <Progress value={parseInt(data?.patient_pipeline?.contacted_patients_percent)} className="h-2" />
+                <Progress value={parseInt(data?.patient_pipeline?.contacted_patients_percent || "0")} className="h-2" variant="warning" />
               </div>
 
               <div className="group/item hover:bg-primary/5 p-3 rounded-lg transition-all duration-200 cursor-pointer">
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-3">
-                    <div className="flex justify-center items-center bg-gradient-primary shadow-md rounded-full w-10 h-10 font-bold text-white text-xs">
+                    <div className="flex justify-center items-center bg-primary shadow-md rounded-full w-10 h-10 font-bold text-white text-xs">
                       {data?.patient_pipeline?.screened_patients}
                     </div>
                     <div>
@@ -226,13 +163,13 @@ export function DefaultDashboard({ propData, loading }) {
                   </div>
                   <span className="font-bold text-primary text-lg">{data?.patient_pipeline?.screened_patients_percent}%</span>
                 </div>
-                <Progress value={parseInt(data?.patient_pipeline?.screened_patients_percent)} className="h-2" />
+                <Progress value={parseInt(data?.patient_pipeline?.screened_patients_percent || "0")} className="h-2" variant="primary" />
               </div>
 
               <div className="group/item hover:bg-success/10 p-3 rounded-lg transition-all duration-200 cursor-pointer">
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-3">
-                    <div className="flex justify-center items-center bg-gradient-success shadow-md rounded-full w-10 h-10 font-bold text-white text-xs">
+                    <div className="flex justify-center items-center bg-success shadow-md rounded-full w-10 h-10 font-bold text-white text-xs">
                       {data?.patient_pipeline?.enrolled_patients}
                     </div>
                     <div>
@@ -242,7 +179,7 @@ export function DefaultDashboard({ propData, loading }) {
                   </div>
                   <span className="font-bold text-success text-lg">{data?.patient_pipeline?.enrolled_patients_percent}%</span>
                 </div>
-                <Progress value={parseInt(data?.patient_pipeline?.enrolled_patients_percent)} className="h-2" />
+                <Progress value={parseInt(data?.patient_pipeline?.enrolled_patients_percent || "0")} className="h-2" variant="success" />
               </div>
             </div>
           </CardContent>
@@ -273,7 +210,7 @@ export function DefaultDashboard({ propData, loading }) {
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${index === 0
-                        ? 'bg-gradient-primary text-white shadow-glow'
+                        ? 'bg-primary text-white shadow-glow'
                         : 'bg-gradient-secondary text-white shadow-md'
                         } font-bold text-lg`}>
                         {index + 1}
@@ -316,7 +253,7 @@ export function DefaultDashboard({ propData, loading }) {
               <div className="space-y-3 bg-gradient-to-r from-success/10 to-transparent p-4 border border-success/20 hover:border-success/40 rounded-xl transition-all duration-300">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <div className="flex justify-center items-center bg-gradient-success rounded-lg w-8 h-8">
+                    <div className="flex justify-center items-center bg-success rounded-lg w-8 h-8">
                       <Users className="w-4 h-4 text-white" />
                     </div>
                     <span className="font-semibold">Contact Rate</span>
@@ -326,29 +263,29 @@ export function DefaultDashboard({ propData, loading }) {
                     <Badge variant="success" className="text-xs">Good</Badge>
                   </div>
                 </div>
-                <Progress value={parseInt(data?.trial_performance_summary?.contact_rate)} className="h-2.5" />
+                <Progress value={parseInt(data?.trial_performance_summary?.contact_rate || "0")} className="h-2.5" variant="success" />
               </div>
 
-              <div className="space-y-3 bg-gradient-to-r from-primary/10 to-transparent p-4 border border-primary/20 hover:border-primary/40 rounded-xl transition-all duration-300">
+              <div className="space-y-3 bg-gradient-to-r from-info/10 to-transparent p-4 border border-info/20 hover:border-info/40 rounded-xl transition-all duration-300">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <div className="flex justify-center items-center bg-gradient-primary rounded-lg w-8 h-8">
+                    <div className="flex justify-center items-center bg-info rounded-lg w-8 h-8">
                       <FileText className="w-4 h-4 text-white" />
                     </div>
                     <span className="font-semibold">Screen Rate</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-primary text-2xl">{data?.trial_performance_summary?.screen_rate}</span>
-                    <Badge variant="default" className="text-xs">Fair</Badge>
+                    <span className="font-bold text-info text-2xl">{data?.trial_performance_summary?.screen_rate}</span>
+                    <Badge variant="info" className="text-xs">Excellent</Badge>
                   </div>
                 </div>
-                <Progress value={parseInt(data?.trial_performance_summary?.screen_rate)} className="h-2.5" />
+                <Progress value={parseInt(data?.trial_performance_summary?.screen_rate || "0")} className="h-2.5" variant="info" />
               </div>
 
               <div className="space-y-3 bg-gradient-to-r from-warning/10 to-transparent p-4 border border-warning/20 hover:border-warning/40 rounded-xl transition-all duration-300">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <div className="flex justify-center items-center bg-gradient-warning rounded-lg w-8 h-8">
+                    <div className="flex justify-center items-center bg-warning rounded-lg w-8 h-8">
                       <Activity className="w-4 h-4 text-white" />
                     </div>
                     <span className="font-semibold">Enrollment Rate</span>
@@ -358,7 +295,7 @@ export function DefaultDashboard({ propData, loading }) {
                     <Badge variant="warning" className="text-xs">Monitor</Badge>
                   </div>
                 </div>
-                <Progress value={parseInt(data?.trial_performance_summary?.enrollment_rate)} className="h-2.5" />
+                <Progress value={parseInt(data?.trial_performance_summary?.enrollment_rate || "0")} className="h-2.5" variant="warning" />
               </div>
             </div>
           </CardContent>
